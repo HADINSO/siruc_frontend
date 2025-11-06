@@ -1,74 +1,37 @@
-# React + TypeScript + Vite
+# 🖥️ SIRUC Frontend
+**Sistema de Rubros y Centros de Costos – Universidad Tecnológica del Chocó**
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+---
 
-Currently, two official plugins are available:
+## 📘 Descripción general
+El **frontend de SIRUC** es una aplicación web desarrollada con **React.js** diseñada para facilitar la **gestión, visualización y control de rubros y centros de costos** dentro de la Universidad Tecnológica del Chocó (UTCH).  
+Su objetivo principal es ofrecer una interfaz moderna, ágil y accesible que permita a los usuarios interactuar con el sistema de manera eficiente, manteniendo altos estándares de usabilidad y diseño.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 🚀 Características principales
+- Interfaz moderna, responsiva y fácil de usar.  
+- Gestión integral de rubros, centros de costos y dependencias.  
+- Autenticación segura mediante **JSON Web Token (JWT)**.  
+- Integración con el backend a través de **Axios**.  
+- Manejo de estado global con **Context API**.  
+- Notificaciones interactivas con **React-Toastify**.  
+- Ruteo dinámico mediante **React Router DOM**.  
+- Uso de **Styled Components** o **TailwindCSS** para estilos limpios y adaptables.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🛠️ Tecnologías utilizadas
+- **React.js**  
+- **Axios**  
+- **Context API**  
+- **React Router DOM**  
+- **React Toastify**  
+- **Styled Components / TailwindCSS**  
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-# siruc_frontend
+## ⚙️ Instalación y ejecución
+1. Clonar el repositorio:
+   ```bash
+   git clone https://github.com/HADINSO/siruc_frontend
