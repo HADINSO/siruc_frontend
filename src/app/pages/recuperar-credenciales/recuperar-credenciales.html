@@ -1,0 +1,81 @@
+<div class="min-h-screen flex items-center justify-center p-4" style="background: conic-gradient(at left center, rgb(187, 247, 208), rgb(34, 197, 94));">
+  <div class="w-full max-w-6xl grid md:grid-cols-2 gap-0 bg-white rounded-2xl overflow-hidden shadow-2xl">
+    
+    <div class="hidden md:flex p-16 items-center justify-center" style="background: conic-gradient(at left center, rgb(187, 247, 208), rgb(34, 197, 94));">
+      <div class="w-64 h-64 bg-white/20 rounded-3xl flex items-center justify-center backdrop-blur-sm">
+        <svg class="w-32 h-32 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path fill-rule="evenodd" d="M5.625 1.5H9a3.75 3.75 0 013.75 3.75v1.875c0 1.036.84 1.875 1.875 1.875H16.5a3.75 3.75 0 013.75 3.75v7.875c0 1.035-.84 1.875-1.875 1.875H5.625a1.875 1.875 0 01-1.875-1.875V3.375c0-1.036.84-1.875 1.875-1.875zM9.75 14.25a.75.75 0 000 1.5H15a.75.75 0 000-1.5H9.75z" clip-rule="evenodd" />
+          <path d="M14.25 5.25a5.23 5.23 0 00-1.279-3.434 9.768 9.768 0 016.963 6.963A5.23 5.23 0 0016.5 7.5h-1.875a.375.375 0 01-.375-.375V5.25z" />
+        </svg>
+      </div>
+    </div>
+    
+    <div class="bg-white p-16 flex flex-col justify-center">
+      <div class="w-full max-w-md mx-auto">
+        
+        <div class="mb-10">
+          <div class="flex items-center justify-center mb-8">
+            <div class="w-16 h-16 bg-emerald-600 rounded-xl flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+            </div>
+          </div>
+          <h1 class="text-3xl font-bold text-gray-900 text-center mb-2">Recuperar Acceso</h1>
+          <p class="text-gray-500 text-center text-sm">Ingresa tu correo y selecciona qué deseas recuperar</p>
+        </div>
+        
+        <form class="space-y-5">
+          <div>
+            <label for="correo" class="block text-gray-700 text-sm font-medium mb-2">Correo Electrónico</label>
+            <input
+              type="email"
+              id="correo"
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+              placeholder="ejemplo@utch.edu.co"
+            />
+          </div>
+          
+          <div>
+            <label class="block text-gray-700 text-sm font-medium mb-3">¿Qué deseas recuperar?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="tipo"
+                  value="usuario"
+                  class="w-4 h-4 text-emerald-600 focus:ring-emerald-500"
+                  checked
+                />
+                <span class="ml-2 text-gray-900">Usuario</span>
+              </label>
+              
+              <label class="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="tipo"
+                  value="contrasena"
+                  class="w-4 h-4 text-emerald-600 focus:ring-emerald-500"
+                />
+                <span class="ml-2 text-gray-900">Contraseña</span>
+              </label>
+            </div>
+          </div>
+          
+          <button
+            type="button"
+            class="w-full py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition-all duration-200 shadow-lg shadow-emerald-600/30"
+          >
+            Enviar Solicitud
+          </button>
+          
+          <div class="text-center pt-2">
+            <a routerLink="/" class="text-emerald-600 text-sm font-medium hover:text-emerald-700 transition-colors duration-200">
+              Volver al inicio de sesión
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
