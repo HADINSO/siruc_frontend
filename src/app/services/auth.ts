@@ -6,11 +6,18 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class Auth {
-  private apiUrl = 'http://localhost:4200/api/auth/login';
+  // CAMBIO AQUÍ: Usar solo la ruta relativa
+  private apiUrl = '/api/auth/login';
 
   constructor(private http: HttpClient) {}
 
   login(usuario: string, contrasena: string): Observable<any> {
-    return this.http.post(this.apiUrl, { usuario, contrasena });
+    // CAMBIO AQUÍ: Mapear a las claves correctas (username y password)
+    return this.http.post(this.apiUrl, { 
+      username: usuario, 
+      password: contrasena 
+    });
+
+    // Nota: El console.log(usuario,contrasena) después del return nunca se ejecutará.
   }
 }
