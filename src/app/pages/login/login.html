@@ -1,6 +1,6 @@
 <div class="min-h-screen flex items-center justify-center p-4" style="background: conic-gradient(at left center, rgb(225, 225, 225), rgb(55, 156, 92));">
   <div class="w-full max-w-6xl grid md:grid-cols-2 gap-0 bg-white rounded-2xl overflow-hidden shadow-2xl">
-    
+
     <div class="hidden md:block relative">
       <img 
         src="https://academico.utch.edu.co/utch/hermesoft/vortal/assets/images/login/descarga.jpg" 
@@ -12,10 +12,10 @@
       </div>
       <div class="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-emerald-900/10"></div>
     </div>
-    
+
     <div class="bg-white p-16 flex flex-col justify-center">
       <div class="w-full max-w-md mx-auto">
-        
+
         <div class="mb-10">
           <div class="flex items-center justify-center mb-8">
             <img 
@@ -24,11 +24,10 @@
               class="h-16 w-auto"
             />
           </div>
-          
           <h1 class="text-3xl font-bold text-gray-900 text-center mb-2">Bienvenido a Siruc</h1>
           <p class="text-gray-500 text-center text-sm">Sistema de Gestión de Rubros y Centros de Costos</p>
         </div>
-        
+
         <form (ngSubmit)="onLogin()" class="space-y-5">
           <div>
             <label for="usuario" class="block text-gray-700 text-sm font-medium mb-2">Usuario</label>
@@ -41,26 +40,46 @@
               placeholder="Ingresa tu usuario"
             />
           </div>
-          
+
           <div>
             <label for="contrasena" class="block text-gray-700 text-sm font-medium mb-2">Contraseña</label>
-            <input
-              type="password"
-              id="contrasena"
-              [(ngModel)]="contrasena"
-              name="contrasena"
-              class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
-              placeholder="Ingresa tu contraseña"
-            />
+            <div class="relative">
+              <input
+                [type]="mostrarContrasena ? 'text' : 'password'"
+                id="contrasena"
+                [(ngModel)]="contrasena"
+                name="contrasena"
+                class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent pr-12 transition-all duration-200"
+                placeholder="Ingresa tu contraseña"
+              />
+              <button
+                type="button"
+                (click)="toggleContrasena()"
+                class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+              >
+                <svg *ngIf="!mostrarContrasena" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <svg *ngIf="mostrarContrasena" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.956 9.956 0 012.223-3.616M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 3l18 18" />
+                </svg>
+              </button>
+            </div>
           </div>
-          
+
           <button
             type="submit"
             class="w-full py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition-all duration-200 shadow-lg shadow-emerald-600/30"
           >
             Iniciar Sesión
           </button>
-          
+
           <div class="text-center pt-2">
             <a routerLink="/recuperar-acceso"
               class="text-gray-900 text-sm font-medium hover:text-gray-700 transition-colors duration-200">
@@ -68,7 +87,12 @@
             </a>
           </div>
         </form>
+
       </div>
     </div>
+  </div>
+
+  <div *ngIf="loading" class="fixed inset-0 flex items-center justify-center bg-black/50">
+    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-emerald-600"></div>
   </div>
 </div>
