@@ -10,11 +10,11 @@
       <div class="absolute top-6 left-6 text-white font-semibold text-sm bg-black/30 px-4 py-2 rounded-lg backdrop-blur-sm">
         Campus Universidad Tecnológica del Chocó
       </div>
-      <div class="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-emerald-900/10"></div>
+      <div class="absolute inset-0 from-emerald-600/10 to-emerald-900/10"></div>
     </div>
 
-    <!-- Contenedor derecho con posición relativa -->
-    <div class="bg-white p-16 flex flex-col justify-center relative">
+    <!-- Contenedor derecho con altura fija -->
+    <div class="bg-white p-16 flex flex-col justify-center relative min-h-[600px] md:min-h-[700px]">
       
       <!-- Formulario de login (se oculta cuando loginExitoso es true) -->
       <div class="w-full max-w-md mx-auto" [class.hidden]="loginExitoso">
@@ -88,14 +88,14 @@
             <div *ngIf="loading" class="absolute inset-0 flex items-center justify-center">
               <div class="flex space-x-2">
                 <div class="w-2.5 h-2.5 bg-white rounded-full animate-bounce" style="animation-delay: 0ms;"></div>
-                <div class="w-2.5 h-2.5 bg-white rounded-full animate-bounce" style="animation-delay: 00ms;"></div>
-                <div class="w-2.5 h-2.5 bg-white rounded-full animate-bounce" style="animation-delay: 00ms;"></div>
+                <div class="w-2.5 h-2.5 bg-white rounded-full animate-bounce" style="animation-delay: 150ms;"></div>
+                <div class="w-2.5 h-2.5 bg-white rounded-full animate-bounce" style="animation-delay: 300ms;"></div>
               </div>
             </div>
           </button>
 
-          <!-- Mensaje de error estilo Instagram -->
-          <div *ngIf="mostrarError" class="space-y-3">
+          <!-- Mensaje de error con animación de entrada -->
+          <div *ngIf="mostrarError" class="space-y-3 animate-fadeIn">
             <div class="flex items-center gap-4">
               <div class="flex-1 h-px bg-gray-300"></div>
               <span class="text-gray-400 text-sm font-medium">O</span>
@@ -106,12 +106,16 @@
             </p>
           </div>
 
-          <div class="text-center" [class.pt-2]="!mostrarError" [class.pt-1]="mostrarError">
+          <!-- Link de recuperación con animación de desplazamiento -->
+          <div class="text-center transition-all duration-500 ease-in-out"
+               [class.pt-2]="!mostrarError"
+               [class.pt-6]="mostrarError">
             <a routerLink="/recuperar-acceso"
               class="text-gray-900 text-sm font-medium hover:text-gray-700 transition-colors duration-200">
               Recuperar usuario / contraseña
             </a>
           </div>
+
         </form>
 
       </div>
