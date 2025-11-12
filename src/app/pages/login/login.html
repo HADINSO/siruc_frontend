@@ -13,8 +13,11 @@
       <div class="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-emerald-900/10"></div>
     </div>
 
-    <div class="bg-white p-16 flex flex-col justify-center">
-      <div class="w-full max-w-md mx-auto">
+    <!-- Contenedor derecho con posición relativa -->
+    <div class="bg-white p-16 flex flex-col justify-center relative">
+      
+      <!-- Formulario de login (se oculta cuando loginExitoso es true) -->
+      <div class="w-full max-w-md mx-auto" [class.hidden]="loginExitoso">
 
         <div class="mb-10">
           <div class="flex items-center justify-center mb-8">
@@ -73,14 +76,37 @@
             </div>
           </div>
 
+          <!-- Botón con animación de puntos de carga -->
           <button
             type="submit"
-            class="w-full py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition-all duration-200 shadow-lg shadow-emerald-600/30"
+            [disabled]="loading"
+            class="w-full py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition-all duration-200 shadow-lg shadow-emerald-600/30 disabled:opacity-70 disabled:cursor-not-allowed relative overflow-hidden"
           >
-            Iniciar Sesión
+            <span [class.invisible]="loading">Iniciar Sesión</span>
+            
+            <!-- Animación de puntos de carga -->
+            <div *ngIf="loading" class="absolute inset-0 flex items-center justify-center">
+              <div class="flex space-x-2">
+                <div class="w-2.5 h-2.5 bg-white rounded-full animate-bounce" style="animation-delay: 0ms;"></div>
+                <div class="w-2.5 h-2.5 bg-white rounded-full animate-bounce" style="animation-delay: 00ms;"></div>
+                <div class="w-2.5 h-2.5 bg-white rounded-full animate-bounce" style="animation-delay: 00ms;"></div>
+              </div>
+            </div>
           </button>
 
-          <div class="text-center pt-2">
+          <!-- Mensaje de error estilo Instagram -->
+          <div *ngIf="mostrarError" class="space-y-3">
+            <div class="flex items-center gap-4">
+              <div class="flex-1 h-px bg-gray-300"></div>
+              <span class="text-gray-400 text-sm font-medium">O</span>
+              <div class="flex-1 h-px bg-gray-300"></div>
+            </div>
+            <p class="text-red-600 text-sm text-center">
+              {{ mensajeError }}
+            </p>
+          </div>
+
+          <div class="text-center" [class.pt-2]="!mostrarError" [class.pt-1]="mostrarError">
             <a routerLink="/recuperar-acceso"
               class="text-gray-900 text-sm font-medium hover:text-gray-700 transition-colors duration-200">
               Recuperar usuario / contraseña
@@ -89,10 +115,36 @@
         </form>
 
       </div>
-    </div>
-  </div>
 
-  <div *ngIf="loading" class="fixed inset-0 flex items-center justify-center bg-black/50">
-    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-emerald-600"></div>
+      <!-- Pantalla de éxito (solo en el panel derecho) -->
+      <div *ngIf="loginExitoso" 
+           class="absolute inset-0 flex items-center justify-center animate-fadeIn"
+           style="background: linear-gradient(135deg, #dce0f5 0%, #49b879 100%);">
+        <div class="text-center text-white px-8">
+          <!-- Ícono animado con layers -->
+          <div class="mb-8 flex justify-center">
+            <div class="relative w-24 h-24">
+              <!-- Círculo de fondo -->
+              <div class="absolute inset-0 bg-white/20 rounded-full animate-pulse"></div>
+              <!-- Ícono de check -->
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-16 h-16 bg-cyan-400 rounded-full flex items-center justify-center animate-scaleIn shadow-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Texto -->
+          <h1 class="text-4xl font-bold mb-4 animate-slideUp">¡Bienvenido de nuevo!</h1>
+          <p class="text-lg text-white/90 animate-slideUp" style="animation-delay: 0.2s;">
+            Redirigiendo a tu panel de control...
+          </p>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
