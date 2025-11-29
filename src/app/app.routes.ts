@@ -31,28 +31,28 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/rubros-secundarios/rubros-secundarios').then(m => m.RubrosSecundarios)
       },
       {
+        path: 'rubros-terciarios',
+        loadComponent: () => import('./pages/rubros-terciaro/rubros-terciaro').then(m => m.RubrosTerciarios)
+      },
+      {
         path: 'propiedades',
         loadComponent: () => import('./pages/propiedades/propiedades').then(m => m.Propiedades)
       },
       {
-        path: 'centros-cost',
-        loadComponent: () => import('./pages/centros-cost/centros-cost').then(m => m.CentrosCost)
+        path: 'centro-de-costo',
+        loadComponent: () => import('./pages/centro-de-costo/centro-de-costo').then(m => m.CentrosCost)
       },
       {
         path: 'asignaciones',
         loadComponent: () => import('./pages/asignaciones/asignaciones').then(m => m.Asignaciones)
       },
       {
-        path: 'movimientos',
-        loadComponent: () => import('./pages/movimientos/movimientos').then(m => m.Movimientos)
-      },
-      {
-        path: 'reportes',
-        loadComponent: () => import('./pages/reportes/reportes').then(m => m.Reportes)
-      },
-      {
         path: 'administracion',
         loadComponent: () => import('./pages/administracion/administracion').then(m => m.Administracion)
+      },
+      {
+        path: '**',
+        loadComponent: () => import('./pages/pagina-generica/pagina-generica').then(m => m.PaginaGenerica)
       }
     ]
   },

@@ -35,7 +35,6 @@ export class Login implements OnInit {
   }
 
   onLogin(): void {
-    // Limpiar errores previos
     this.mensajeError = '';
     this.mostrarError = false;
 
@@ -48,17 +47,32 @@ export class Login implements OnInit {
     this.loading = true;
 
     this.authService.login(this.usuario, this.contrasena).subscribe({
-      next: () => {
-        localStorage.setItem('usuario', this.usuario);
+      next: (response) => {
+        console.log('✅ Login exitoso, respuesta:', response);
+        
+        const personaId = localStorage.getItem('persona_id');
+        const nombre = localStorage.getItem('nombre_usuario');
+        const rol = localStorage.getItem('rol_usuario');
+        
+        console.log('📦 LocalStorage después del login:');
+        console.log('- persona_id:', personaId);
+        console.log('- nombre_usuario:', nombre);
+        console.log('- rol_usuario:', rol);
+        
+        if (!personaId) {
+          console.error('❌ ERROR: persona_id no se guardó en localStorage');
+          console.log('Estructura de respuesta recibida:', JSON.stringify(response, null, 2));
+        }
+        
         this.loading = false;
         this.loginExitoso = true;
         
-        // Redirigir después de 2 segundos
         setTimeout(() => {
           this.router.navigate(['/inicio']);
         }, 1000);
       },
-      error: () => {
+      error: (error) => {
+        console.error('❌ Error en login:', error);
         this.loading = false;
         this.mensajeError = 'Tu contraseña no es correcta. Vuelve a comprobarla.';
         this.mostrarError = true;

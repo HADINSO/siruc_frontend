@@ -1,0 +1,106 @@
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Clases de animación */
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* Toast animations */
+:host ::ng-deep .toast-item {
+  animation: slideInRight 0.3s ease-out;
+  opacity: 0;
+}
+
+:host ::ng-deep .toast-item.toast-show {
+  opacity: 1;
+}
+
+:host ::ng-deep .toast-item.toast-hide {
+  animation: slideOutRight 0.3s ease-out;
+}
+
+/* Spinner animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Rotate animation */
+.rotate-90 {
+  transform: rotate(90deg);
+}
+
+/* Transiciones suaves */
+button {
+  transition: all 0.3s ease;
+}
+
+/* Hover effects mejorados */
+.hover\:shadow-md:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Focus styles mejorados */
+input:focus,
+textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(116, 198, 157, 0.2);
+}
+
+/* Smooth scroll */
+* {
+  scroll-behavior: smooth;
+}

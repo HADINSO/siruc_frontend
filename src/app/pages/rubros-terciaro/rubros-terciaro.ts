@@ -1,33 +1,30 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RubrosService, Periodo, RubroPrincipal, RubroSecundario } from '../../services/rubros.service';
+import { RubrosService, Periodo, RubroPrincipal, RubroSecundario, RubroTerciario } from '../../services/rubros.service';
 import { ToastService } from '../../services/toast.service';
 
-interface RubroPrincipalExtended extends RubroPrincipal {
-  expandido: boolean;
-  secundarios: RubroSecundario[];
-  cantidadSecundarios: number;
-  color: string;
-}
-
 @Component({
-  selector: 'app-rubros-principales',
+  selector: 'app-rubros-terciarios',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './rubros-principales.html',
-  styleUrl: './rubros-principales.css',
+  templateUrl: './rubros-terciaro.html',
+  styleUrl: './rubros-terciaro.css',
 })
-export class RubrosPrincipales implements OnInit, OnDestroy {
+export class RubrosTerciarios implements OnInit, OnDestroy {
   periodos: Periodo[] = [];
-  rubrosPrincipales: RubroPrincipalExtended[] = [];
+  rubrosPrincipales: RubroPrincipal[] = [];
+  rubrosSecundarios: RubroSecundario[] = [];
+  rubrosTerciarios: RubroTerciario[] = [];
   
   periodoSeleccionado: number | null = null;
+  secundarioSeleccionado: number | null = null;
+  
   mostrarModalPeriodo = false;
   mostrarModalRubro = false;
   modoEdicion = false;
   
-  rubroSeleccionado: RubroPrincipalExtended | null = null;
+  rubroSeleccionado: RubroTerciario | null = null;
   
   nuevoRubro = {
     nombre: '',
@@ -36,17 +33,11 @@ export class RubrosPrincipales implements OnInit, OnDestroy {
   };
   
   procesando = false;
-  cargando = true;
+  cargando = false;
   cargandoPeriodos = true;
+  cargandoSecundarios = false;
 
-  totalPrincipales = 0;
-  totalSecundarios = 0;
   totalTerciarios = 0;
-
-  coloresDisponibles = [
-    '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6',
-    '#ef4444', '#06b6d4', '#f97316', '#14b8a6'
-  ];
 
   constructor(
     private rubrosService: RubrosService,
@@ -68,26 +59,20 @@ export class RubrosPrincipales implements OnInit, OnDestroy {
   }
 
   cargarPeriodos(): void {
-    console.log('🔄 Cargando períodos fiscales...');
     this.cargandoPeriodos = true;
     this.rubrosService.getPeriodos().subscribe({
       next: (periodos) => {
-        console.log('✅ Períodos cargados:', periodos);
         this.periodos = periodos;
         this.cargandoPeriodos = false;
         
         if (periodos.length > 0 && !this.periodoSeleccionado) {
           // Backend no devuelve campo "activo", seleccionar el primero
           this.periodoSeleccionado = periodos[0].id;
-          console.log('📌 Período seleccionado automáticamente:', periodos[0]);
-          this.cargarRubros();
-        } else if (periodos.length === 0) {
-          console.error('❌ No hay períodos fiscales en la base de datos');
-          this.toast.error('Error', 'No hay períodos fiscales registrados. Por favor crea uno primero.');
+          this.cargarPrincipales();
         }
       },
       error: (error) => {
-        console.error('❌ Error al cargar períodos:', error);
+        console.error('Error al cargar períodos:', error);
         this.toast.error('Error', 'No se pudieron cargar los períodos fiscales');
         this.cargandoPeriodos = false;
       }
@@ -97,97 +82,93 @@ export class RubrosPrincipales implements OnInit, OnDestroy {
   seleccionarPeriodo(periodoId: number): void {
     this.periodoSeleccionado = periodoId;
     this.mostrarModalPeriodo = false;
-    this.cargarRubros();
+    this.cargarPrincipales();
   }
 
-  cargarRubros(): void {
+  cargarPrincipales(): void {
     if (!this.periodoSeleccionado) return;
     
-    this.cargando = true;
     this.rubrosService.getRubrosPrincipalesByPeriodo(this.periodoSeleccionado).subscribe({
-      next: (todosLosRubros) => {
-        const rubros = todosLosRubros.filter(r => r.periodo_fiscal_id === this.periodoSeleccionado);
-        
-        this.rubrosPrincipales = rubros.map((rubro, index) => ({
-          ...rubro,
-          expandido: false,
-          secundarios: [],
-          cantidadSecundarios: 0,
-          color: this.coloresDisponibles[index % this.coloresDisponibles.length]
-        }));
-        
-        this.totalPrincipales = rubros.length;
-        
-        this.rubrosPrincipales.forEach(rubro => {
-          this.cargarSecundarios(rubro);
-        });
-        
-        this.calcularTotalesGlobales();
-        
-        this.cargando = false;
-        this.cdr.detectChanges();
+      next: (todosLosPrincipales) => {
+        this.rubrosPrincipales = todosLosPrincipales.filter(p => p.periodo_fiscal_id === this.periodoSeleccionado);
+        this.cargarTodosSecundarios();
       },
       error: (error) => {
-        console.error('Error al cargar rubros:', error);
-        this.toast.error('Error', 'No se pudieron cargar los rubros');
-        this.cargando = false;
+        console.error('Error al cargar principales:', error);
       }
     });
   }
 
-  cargarSecundarios(rubro: RubroPrincipalExtended): void {
-    if (!rubro.id) return;
+  cargarTodosSecundarios(): void {
+    this.cargandoSecundarios = true;
     
-    this.rubrosService.getRubrosSecundariosByPrincipal(rubro.id).subscribe({
+    // Obtener TODOS los secundarios una sola vez
+    this.rubrosService.getRubrosSecundariosByPrincipal(1).subscribe({
       next: (todosLosSecundarios) => {
-        const secundarios = todosLosSecundarios.filter(s => s.rublo_principal_id === rubro.id);
-        rubro.secundarios = secundarios;
-        rubro.cantidadSecundarios = secundarios.length;
-        this.calcularTotalesGlobales();
-        this.cdr.detectChanges();
+        // Filtrar por período y remover duplicados por ID
+        const secundariosFiltrados = todosLosSecundarios.filter(s => 
+          s.periodo_fiscal_id === this.periodoSeleccionado
+        );
+        
+        // Remover duplicados usando Map
+        const secundariosUnicos = Array.from(
+          new Map(secundariosFiltrados.map(s => [s.id, s])).values()
+        );
+        
+        this.rubrosSecundarios = secundariosUnicos;
+        this.cargandoSecundarios = false;
+        
+        console.log('✅ Secundarios únicos cargados:', this.rubrosSecundarios.length);
+        
+        if (this.rubrosSecundarios.length > 0 && !this.secundarioSeleccionado) {
+          this.secundarioSeleccionado = this.rubrosSecundarios[0].id!;
+          this.cargarTerciarios();
+        }
       },
       error: (error) => {
         console.error('Error al cargar secundarios:', error);
-        rubro.secundarios = [];
-        rubro.cantidadSecundarios = 0;
+        this.cargandoSecundarios = false;
       }
     });
   }
 
-  calcularTotalesGlobales(): void {
-    this.totalSecundarios = this.rubrosPrincipales.reduce(
-      (total, rubro) => total + rubro.cantidadSecundarios, 0
-    );
-    
-    let totalTerciarios = 0;
-    this.rubrosPrincipales.forEach(principal => {
-      principal.secundarios.forEach(secundario => {
-        if (secundario.id) {
-          this.rubrosService.getRubrosTerciariosBySecundario(secundario.id).subscribe({
-            next: (todosLosTerciarios) => {
-              const terciarios = todosLosTerciarios.filter(t => t.rublo_secundario_id === secundario.id);
-              totalTerciarios += terciarios.length;
-              this.totalTerciarios = totalTerciarios;
-              this.cdr.detectChanges();
-            }
-          });
-        }
-      });
-    });
+  onChangeSecundario(): void {
+    if (this.secundarioSeleccionado) {
+      this.cargarTerciarios();
+    } else {
+      this.rubrosTerciarios = [];
+      this.totalTerciarios = 0;
+    }
   }
 
-  toggleExpandir(rubro: RubroPrincipalExtended): void {
-    rubro.expandido = !rubro.expandido;
+  cargarTerciarios(): void {
+    if (!this.secundarioSeleccionado) return;
     
-    if (rubro.expandido && rubro.secundarios.length === 0) {
-      this.cargarSecundarios(rubro);
-    }
+    this.cargando = true;
+    this.rubrosService.getRubrosTerciariosBySecundario(this.secundarioSeleccionado).subscribe({
+      next: (todosLosTerciarios) => {
+        this.rubrosTerciarios = todosLosTerciarios.filter(t => t.rublo_secundario_id === this.secundarioSeleccionado);
+        this.totalTerciarios = this.rubrosTerciarios.length;
+        this.cargando = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error al cargar terciarios:', error);
+        this.toast.error('Error', 'No se pudieron cargar los rubros terciarios');
+        this.cargando = false;
+      }
+    });
   }
 
   abrirModalNuevoRubro(): void {
     if (!this.periodoSeleccionado) {
       this.toast.warning('Período requerido', 'Por favor selecciona un período fiscal');
       this.mostrarModalPeriodo = true;
+      return;
+    }
+
+    if (!this.secundarioSeleccionado) {
+      this.toast.warning('Secundario requerido', 'Por favor selecciona un rubro secundario');
       return;
     }
     
@@ -197,11 +178,12 @@ export class RubrosPrincipales implements OnInit, OnDestroy {
     this.mostrarModalRubro = true;
   }
 
-  abrirModalEditarRubro(rubro: RubroPrincipalExtended): void {
+  abrirModalEditarRubro(rubro: RubroTerciario): void {
     this.modoEdicion = true;
     this.rubroSeleccionado = rubro;
     
-    const codigoNumero = rubro.cuenta ? rubro.cuenta.replace('RUB-', '') : '';
+    const secundario = this.rubrosSecundarios.find(s => s.id === rubro.rublo_secundario_id);
+    const codigoNumero = rubro.cuenta ? rubro.cuenta.replace(`${secundario?.cuenta}-`, '') : '';
     
     this.nuevoRubro = { 
       nombre: rubro.nombre, 
@@ -239,17 +221,28 @@ export class RubrosPrincipales implements OnInit, OnDestroy {
       return;
     }
 
-    const codigoCompleto = `RUB-${this.nuevoRubro.codigoNumero.padStart(3, '0')}`;
+    if (!this.secundarioSeleccionado) {
+      this.toast.error('Error', 'No hay rubro secundario seleccionado');
+      return;
+    }
+
+    const secundario = this.rubrosSecundarios.find(s => s.id === this.secundarioSeleccionado);
+    if (!secundario) {
+      this.toast.error('Error', 'No se encontró el rubro secundario');
+      return;
+    }
+
+    const codigoCompleto = `${secundario.cuenta}-${this.nuevoRubro.codigoNumero.padStart(3, '0')}`;
 
     // Validar código duplicado
     if (!this.modoEdicion) {
-      const codigoExistente = this.rubrosPrincipales.find(r => r.cuenta === codigoCompleto);
+      const codigoExistente = this.rubrosTerciarios.find(r => r.cuenta === codigoCompleto);
       if (codigoExistente) {
         this.toast.error('Código duplicado', `El código ${codigoCompleto} ya está siendo usado por "${codigoExistente.nombre}"`);
         return;
       }
     } else if (this.rubroSeleccionado) {
-      const codigoExistente = this.rubrosPrincipales.find(r => r.cuenta === codigoCompleto && r.id !== this.rubroSeleccionado?.id);
+      const codigoExistente = this.rubrosTerciarios.find(r => r.cuenta === codigoCompleto && r.id !== this.rubroSeleccionado?.id);
       if (codigoExistente) {
         this.toast.error('Código duplicado', `El código ${codigoCompleto} ya está siendo usado por "${codigoExistente.nombre}"`);
         return;
@@ -264,19 +257,9 @@ export class RubrosPrincipales implements OnInit, OnDestroy {
         cuenta: codigoCompleto
       };
       
-      this.rubrosService.updateRubroPrincipal(this.rubroSeleccionado.id, updateData).subscribe({
-        next: (rubroActualizado) => {
-          const index = this.rubrosPrincipales.findIndex(r => r.id === rubroActualizado.id);
-          if (index !== -1) {
-            this.rubrosPrincipales[index] = {
-              ...rubroActualizado,
-              expandido: this.rubrosPrincipales[index].expandido,
-              secundarios: this.rubrosPrincipales[index].secundarios,
-              cantidadSecundarios: this.rubrosPrincipales[index].cantidadSecundarios,
-              color: this.rubrosPrincipales[index].color
-            };
-          }
-          this.cdr.detectChanges();
+      this.rubrosService.updateRubroTerciario(this.rubroSeleccionado.id, updateData).subscribe({
+        next: () => {
+          this.cargarTerciarios();
           this.toast.success('¡Actualizado!', 'El rubro ha sido actualizado exitosamente');
           this.procesando = false;
           this.cerrarModal();
@@ -288,27 +271,22 @@ export class RubrosPrincipales implements OnInit, OnDestroy {
         }
       });
     } else {
-      const data: RubroPrincipal = {
+      const data: RubroTerciario = {
         nombre: this.nuevoRubro.nombre.trim(),
         cuenta: codigoCompleto,
-        periodo_fiscal_id: Number(this.periodoSeleccionado)
+        rublo_secundario_id: this.secundarioSeleccionado,
+        periodo_fiscal_id: this.periodoSeleccionado
       };
 
-      console.log('📤 Enviando:', data);
-
-      this.rubrosService.createRubroPrincipal(data).subscribe({
-        next: (nuevoRubro) => {
-          console.log('✅ Rubro creado:', nuevoRubro);
-          
-          // Recargar toda la lista para asegurar que aparezca
-          this.cargarRubros();
-          
+      this.rubrosService.createRubroTerciario(data).subscribe({
+        next: () => {
+          this.cargarTerciarios();
           this.toast.success('¡Creado!', 'El rubro ha sido creado exitosamente');
           this.procesando = false;
           this.cerrarModal();
         },
         error: (error) => {
-          console.error('❌ Error:', error);
+          console.error('Error al crear rubro:', error);
           if (error.error && error.error.message) {
             this.toast.error('Error', error.error.message);
           } else {
@@ -320,27 +298,21 @@ export class RubrosPrincipales implements OnInit, OnDestroy {
     }
   }
 
-  async eliminarRubro(rubro: RubroPrincipalExtended): Promise<void> {
+  async eliminarRubro(rubro: RubroTerciario): Promise<void> {
     if (!rubro.id) return;
 
     const confirmar = await this.mostrarConfirmacion(
       '¿Estás seguro?',
-      `Al eliminar "${rubro.nombre}" se eliminarán también todos sus ${rubro.cantidadSecundarios} rubros secundarios y sus terciarios asociados. Esta acción no se puede deshacer.`
+      `¿Deseas eliminar "${rubro.nombre}"? Esta acción no se puede deshacer.`
     );
 
     if (confirmar) {
       this.procesando = true;
-      this.rubrosService.deleteRubroPrincipal(rubro.id).subscribe({
+      this.rubrosService.deleteRubroTerciario(rubro.id).subscribe({
         next: () => {
-          const index = this.rubrosPrincipales.findIndex(r => r.id === rubro.id);
-          if (index !== -1) {
-            this.rubrosPrincipales.splice(index, 1);
-          }
-          this.totalPrincipales--;
-          this.calcularTotalesGlobales();
+          this.cargarTerciarios();
           this.limpiarModalesHuerfanos();
-          this.cdr.detectChanges();
-          this.toast.success('¡Eliminado!', 'El rubro y sus dependencias han sido eliminados');
+          this.toast.success('¡Eliminado!', 'El rubro ha sido eliminado');
           this.procesando = false;
         },
         error: (error) => {
@@ -360,24 +332,30 @@ export class RubrosPrincipales implements OnInit, OnDestroy {
     if (!periodo) return 'No encontrado';
     return `${periodo.anio}`;
   }
-  
-  getPrincipalCodigo(rubroId: number | undefined): string {
-    if (!rubroId) return '000';
-    return rubroId.toString().padStart(3, '0');
+
+  getSecundarioNombre(): string {
+    if (!this.secundarioSeleccionado) return 'Ninguno';
+    const secundario = this.rubrosSecundarios.find(s => s.id === this.secundarioSeleccionado);
+    return secundario ? secundario.nombre : 'Desconocido';
+  }
+
+  getSecundarioCodigo(): string {
+    if (!this.secundarioSeleccionado) return 'RUB-000-00';
+    const secundario = this.rubrosSecundarios.find(s => s.id === this.secundarioSeleccionado);
+    return secundario?.cuenta || 'RUB-000-00';
   }
 
   getCodigoPreview(): string {
-    if (!this.nuevoRubro.codigoNumero) return 'RUB-000';
-    return `RUB-${this.nuevoRubro.codigoNumero.padStart(3, '0')}`;
+    if (!this.nuevoRubro.codigoNumero) return `${this.getSecundarioCodigo()}-000`;
+    return `${this.getSecundarioCodigo()}-${this.nuevoRubro.codigoNumero.padStart(3, '0')}`;
   }
 
   private async mostrarConfirmacion(title: string, text: string): Promise<boolean> {
     return new Promise((resolve) => {
       const dialogId = `confirm-dialog-${Date.now()}`;
-      
       const confirmHTML = `
         <div class="fixed inset-0 z-[9999] flex items-center justify-center animate-fade-in" style="background-color: rgba(0, 0, 0, 0.5);" id="${dialogId}">
-          <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all animate-scale-in">
+          <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
             <div class="text-center">
               <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full mb-4 bg-orange-100">
                 <svg class="h-8 w-8 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -387,51 +365,21 @@ export class RubrosPrincipales implements OnInit, OnDestroy {
               <h3 class="text-xl font-bold text-gray-900 mb-2">${title}</h3>
               <p class="text-gray-600 mb-6">${text}</p>
               <div class="flex gap-3 justify-center">
-                <button id="btn-cancelar-${dialogId}" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-xl hover:bg-gray-300 transition-colors">
-                  Cancelar
-                </button>
-                <button id="btn-confirmar-${dialogId}" class="px-6 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors">
-                  Eliminar
-                </button>
+                <button id="btn-cancelar-${dialogId}" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-xl hover:bg-gray-300">Cancelar</button>
+                <button id="btn-confirmar-${dialogId}" class="px-6 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">Eliminar</button>
               </div>
             </div>
           </div>
         </div>
       `;
-      
       document.body.insertAdjacentHTML('beforeend', confirmHTML);
-      
       const dialog = document.getElementById(dialogId);
       const btnConfirmar = document.getElementById(`btn-confirmar-${dialogId}`);
       const btnCancelar = document.getElementById(`btn-cancelar-${dialogId}`);
-      
-      const cleanup = () => {
-        if (dialog) {
-          dialog.remove();
-        }
-        setTimeout(() => {
-          this.limpiarModalesHuerfanos();
-        }, 100);
-      };
-      
-      const handleConfirmar = () => {
-        cleanup();
-        resolve(true);
-      };
-      
-      const handleCancelar = () => {
-        cleanup();
-        resolve(false);
-      };
-      
-      btnConfirmar?.addEventListener('click', handleConfirmar, { once: true });
-      btnCancelar?.addEventListener('click', handleCancelar, { once: true });
-      
-      dialog?.addEventListener('click', (e) => {
-        if (e.target === dialog) {
-          handleCancelar();
-        }
-      }, { once: true });
+      const cleanup = () => { if (dialog) dialog.remove(); setTimeout(() => this.limpiarModalesHuerfanos(), 100); };
+      btnConfirmar?.addEventListener('click', () => { cleanup(); resolve(true); }, { once: true });
+      btnCancelar?.addEventListener('click', () => { cleanup(); resolve(false); }, { once: true });
+      dialog?.addEventListener('click', (e) => { if (e.target === dialog) { cleanup(); resolve(false); }}, { once: true });
     });
   }
 }

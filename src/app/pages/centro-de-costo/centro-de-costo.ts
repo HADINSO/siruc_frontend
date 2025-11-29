@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CentrosCostoService, CentroCosto, Dependencia } from '../../services/centros-costo.service';
@@ -10,13 +10,13 @@ interface CentroCostoExtended extends CentroCosto {
 }
 
 @Component({
-  selector: 'app-centros-cost',
+  selector: 'app-centro-de-costo',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './centros-cost.html',
-  styleUrl: './centros-cost.css',
+  templateUrl: './centro-de-costo.html',
+  styleUrl: './centro-de-costo.css',
 })
-export class CentrosCost implements OnInit {
+export class CentrosCost implements OnInit, OnDestroy {
   centros: CentroCostoExtended[] = [];
   
   mostrarModal = false;
@@ -41,11 +41,23 @@ export class CentrosCost implements OnInit {
 
   constructor(
     private centrosCostoService: CentrosCostoService,
-    private toast: ToastService
+    private toast: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.cargarDatos();
+  }
+
+  ngOnDestroy(): void {
+    // Limpiar cualquier modal que quede en el DOM
+    this.limpiarModalesHuerfanos();
+  }
+
+  private limpiarModalesHuerfanos(): void {
+    // Buscar y eliminar todos los modales de confirmación
+    const modales = document.querySelectorAll('[id^="confirm-dialog-"]');
+    modales.forEach(modal => modal.remove());
   }
 
   cargarDatos(): void {
@@ -59,11 +71,14 @@ export class CentrosCost implements OnInit {
           expandido: false
         }));
         this.cargando = false;
+        this.cdr.detectChanges();
+        console.log('✅ Centros cargados:', this.centros);
       },
       error: (error) => {
-        console.error('Error al cargar centros de costo:', error);
+        console.error('❌ Error al cargar centros de costo:', error);
         this.toast.error('Error', 'No se pudieron cargar los centros de costo');
         this.cargando = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -77,26 +92,36 @@ export class CentrosCost implements OnInit {
   }
 
   toggleExpandir(centro: CentroCostoExtended): void {
-    if (!centro.expandido && centro.dependencias && centro.dependencias.length === 0) {
+    centro.expandido = !centro.expandido;
+    
+    if (centro.expandido && (!centro.dependencias || centro.dependencias.length === 0)) {
       this.cargarDependencias(centro);
     }
-    centro.expandido = !centro.expandido;
   }
 
   cargarDependencias(centro: CentroCostoExtended): void {
+    console.log('🔍 Cargando dependencias para centro:', centro.id);
+    
     this.centrosCostoService.getDependenciasByCentro(centro.id).subscribe({
       next: (dependencias) => {
         centro.dependencias = dependencias;
         centro.cantidadDependencias = dependencias.length;
+        this.cdr.detectChanges();
+        console.log('✅ Dependencias cargadas:', dependencias);
       },
       error: (error) => {
-        console.error('Error al cargar dependencias:', error);
-        this.toast.error('Error', 'No se pudieron cargar las dependencias');
+        console.error('❌ Error al cargar dependencias:', error);
+        centro.dependencias = [];
+        centro.cantidadDependencias = 0;
+        this.cdr.detectChanges();
       }
     });
   }
 
   abrirModalNuevoCentro(): void {
+    // Limpiar modales huérfanos antes de abrir uno nuevo
+    this.limpiarModalesHuerfanos();
+    
     this.modoEdicion = false;
     this.nuevoCentro = { nombre: '' };
     this.mostrarModal = true;
@@ -125,6 +150,7 @@ export class CentrosCost implements OnInit {
     this.procesando = true;
 
     if (this.modoEdicion && this.centroSeleccionado) {
+      // Actualizar
       this.centrosCostoService.updateCentro(this.centroSeleccionado.id, this.nuevoCentro).subscribe({
         next: (centroActualizado) => {
           const index = this.centros.findIndex(c => c.id === centroActualizado.id);
@@ -136,17 +162,19 @@ export class CentrosCost implements OnInit {
               expandido: this.centros[index].expandido
             };
           }
+          this.cdr.detectChanges();
           this.toast.success('¡Actualizado!', 'El centro de costo ha sido actualizado exitosamente');
           this.procesando = false;
           this.cerrarModal();
         },
         error: (error) => {
-          console.error('Error al actualizar centro:', error);
+          console.error('❌ Error al actualizar centro:', error);
           this.toast.error('Error', 'No se pudo actualizar el centro de costo');
           this.procesando = false;
         }
       });
     } else {
+      // Crear
       this.centrosCostoService.createCentro(this.nuevoCentro).subscribe({
         next: (nuevoCentro) => {
           this.centros.push({
@@ -155,12 +183,13 @@ export class CentrosCost implements OnInit {
             cantidadDependencias: 0,
             expandido: false
           });
+          this.cdr.detectChanges();
           this.toast.success('¡Creado!', 'El centro de costo ha sido creado exitosamente');
           this.procesando = false;
           this.cerrarModal();
         },
         error: (error) => {
-          console.error('Error al crear centro:', error);
+          console.error('❌ Error al crear centro:', error);
           this.toast.error('Error', 'No se pudo crear el centro de costo');
           this.procesando = false;
         }
@@ -182,15 +211,23 @@ export class CentrosCost implements OnInit {
           if (index !== -1) {
             this.centros.splice(index, 1);
           }
+          
+          // Limpiar modales huérfanos después de eliminar
+          this.limpiarModalesHuerfanos();
+          
+          this.cdr.detectChanges();
           this.toast.success('¡Eliminado!', 'El centro de costo y sus dependencias han sido eliminados');
           this.procesando = false;
         },
         error: (error) => {
-          console.error('Error al eliminar centro:', error);
+          console.error('❌ Error al eliminar centro:', error);
           this.toast.error('Error', 'No se pudo eliminar el centro de costo');
           this.procesando = false;
         }
       });
+    } else {
+      // Si cancela, también limpiar
+      this.limpiarModalesHuerfanos();
     }
   }
 
@@ -231,6 +268,7 @@ export class CentrosCost implements OnInit {
     this.procesando = true;
 
     if (this.modoEdicionDependencia && this.dependenciaSeleccionada) {
+      // Actualizar
       this.centrosCostoService.updateDependencia(
         this.dependenciaSeleccionada.id, 
         this.nuevaDependencia
@@ -244,25 +282,31 @@ export class CentrosCost implements OnInit {
               this.centroSeleccionado.dependencias[index] = dependenciaActualizada;
             }
           }
+          this.cdr.detectChanges();
           this.toast.success('¡Actualizado!', 'La dependencia ha sido actualizada exitosamente');
           this.procesando = false;
           this.cerrarModalDependencia();
         },
         error: (error) => {
-          console.error('Error al actualizar dependencia:', error);
+          console.error('❌ Error al actualizar dependencia:', error);
           this.toast.error('Error', 'No se pudo actualizar la dependencia');
           this.procesando = false;
         }
       });
     } else {
+      // Crear
       const nuevaDep = {
         centro_costo_id: this.centroSeleccionado.id,
         nombre: this.nuevaDependencia.nombre,
         descripcion: this.nuevaDependencia.descripcion
       };
 
+      console.log('📤 Creando dependencia:', nuevaDep);
+
       this.centrosCostoService.createDependencia(nuevaDep).subscribe({
         next: (dependenciaCreada) => {
+          console.log('✅ Dependencia creada:', dependenciaCreada);
+          
           if (this.centroSeleccionado) {
             if (!this.centroSeleccionado.dependencias) {
               this.centroSeleccionado.dependencias = [];
@@ -270,12 +314,14 @@ export class CentrosCost implements OnInit {
             this.centroSeleccionado.dependencias.push(dependenciaCreada);
             this.centroSeleccionado.cantidadDependencias = this.centroSeleccionado.dependencias.length;
           }
+          this.cdr.detectChanges();
           this.toast.success('¡Creado!', 'La dependencia ha sido creada exitosamente');
           this.procesando = false;
           this.cerrarModalDependencia();
         },
         error: (error) => {
-          console.error('Error al crear dependencia:', error);
+          console.error('❌ Error al crear dependencia:', error);
+          console.error('Detalles del error:', error.error);
           this.toast.error('Error', 'No se pudo crear la dependencia');
           this.procesando = false;
         }
@@ -300,22 +346,32 @@ export class CentrosCost implements OnInit {
               centro.cantidadDependencias = centro.dependencias.length;
             }
           }
+          
+          // Limpiar modales después de eliminar
+          this.limpiarModalesHuerfanos();
+          
+          this.cdr.detectChanges();
           this.toast.success('¡Eliminado!', 'La dependencia ha sido eliminada');
           this.procesando = false;
         },
         error: (error) => {
-          console.error('Error al eliminar dependencia:', error);
+          console.error('❌ Error al eliminar dependencia:', error);
           this.toast.error('Error', 'No se pudo eliminar la dependencia');
           this.procesando = false;
         }
       });
+    } else {
+      // Si cancela, también limpiar
+      this.limpiarModalesHuerfanos();
     }
   }
 
   private async mostrarConfirmacion(title: string, text: string): Promise<boolean> {
     return new Promise((resolve) => {
+      const dialogId = `confirm-dialog-${Date.now()}`;
+      
       const confirmHTML = `
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 animate-fade-in" id="confirm-dialog">
+        <div class="fixed inset-0 z-[9999] flex items-center justify-center animate-fade-in" style="background-color: rgba(0, 0, 0, 0.5);" id="${dialogId}">
           <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all animate-scale-in">
             <div class="text-center">
               <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full mb-4 bg-orange-100">
@@ -326,10 +382,10 @@ export class CentrosCost implements OnInit {
               <h3 class="text-xl font-bold text-gray-900 mb-2">${title}</h3>
               <p class="text-gray-600 mb-6">${text}</p>
               <div class="flex gap-3 justify-center">
-                <button id="btn-cancelar" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-xl hover:bg-gray-300 transition-colors">
+                <button id="btn-cancelar-${dialogId}" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-xl hover:bg-gray-300 transition-colors">
                   Cancelar
                 </button>
-                <button id="btn-confirmar" class="px-6 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors">
+                <button id="btn-confirmar-${dialogId}" class="px-6 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors">
                   Eliminar
                 </button>
               </div>
@@ -337,21 +393,41 @@ export class CentrosCost implements OnInit {
           </div>
         </div>
       `;
+      
       document.body.insertAdjacentHTML('beforeend', confirmHTML);
       
-      const dialog = document.getElementById('confirm-dialog');
-      const btnConfirmar = document.getElementById('btn-confirmar');
-      const btnCancelar = document.getElementById('btn-cancelar');
+      const dialog = document.getElementById(dialogId);
+      const btnConfirmar = document.getElementById(`btn-confirmar-${dialogId}`);
+      const btnCancelar = document.getElementById(`btn-cancelar-${dialogId}`);
       
-      btnConfirmar?.addEventListener('click', () => {
-        dialog?.remove();
+      const cleanup = () => {
+        if (dialog) {
+          dialog.remove();
+        }
+        // Verificar si quedan modales huérfanos y eliminarlos
+        setTimeout(() => {
+          this.limpiarModalesHuerfanos();
+        }, 100);
+      };
+      
+      const handleConfirmar = () => {
+        cleanup();
         resolve(true);
-      });
+      };
       
-      btnCancelar?.addEventListener('click', () => {
-        dialog?.remove();
+      const handleCancelar = () => {
+        cleanup();
         resolve(false);
-      });
+      };
+      
+      btnConfirmar?.addEventListener('click', handleConfirmar, { once: true });
+      btnCancelar?.addEventListener('click', handleCancelar, { once: true });
+      
+      dialog?.addEventListener('click', (e) => {
+        if (e.target === dialog) {
+          handleCancelar();
+        }
+      }, { once: true });
     });
   }
 }

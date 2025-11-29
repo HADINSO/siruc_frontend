@@ -191,7 +191,7 @@
 </div>
 
 <!-- Modal Centro de Costo -->
-<div *ngIf="mostrarModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 animate-fade-in">
+<div *ngIf="mostrarModal" class="fixed inset-0 z-50 flex items-center justify-center animate-fade-in" style="background-color: rgba(0, 0, 0, 0.5);">
   <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 animate-scale-in">
     <h3 class="text-xl font-bold text-[#1B4332] mb-6">
       {{ modoEdicion ? 'Editar Centro de Costo' : 'Nuevo Centro de Costo' }}
@@ -204,7 +204,8 @@
           type="text" 
           [(ngModel)]="nuevoCentro.nombre"
           class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#74C69D] focus:border-transparent"
-          placeholder="Ej: Rectoría, Facultad de Ingeniería">
+          placeholder="Ej: Rectoría, Facultad de Ingeniería"
+          (keyup.enter)="guardarCentro()">
       </div>
     </div>
 
@@ -230,7 +231,7 @@
 </div>
 
 <!-- Modal Dependencia -->
-<div *ngIf="mostrarModalDependencia" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 animate-fade-in">
+<div *ngIf="mostrarModalDependencia" class="fixed inset-0 z-50 flex items-center justify-center animate-fade-in" style="background-color: rgba(0, 0, 0, 0.5);">
   <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 animate-scale-in">
     <h3 class="text-xl font-bold text-[#1B4332] mb-2">
       {{ modoEdicionDependencia ? 'Editar Dependencia' : 'Nueva Dependencia' }}
