@@ -32,49 +32,54 @@ export interface ElementoResponse {
 export class LayoutService {
   private apiUrl = '/api/elementos/persona';
 
+  // ==================== ORDEN PERSONALIZADO ====================
+  // 1. Dashboard
+  // 2. Gestor De Información
+  // 3. Centro De Costo
+  // 4-10. Rubros (Propiedades → Principales → Secundarios → Terciarios → Cuartos → Quintos → Sextos)
+  // 11. Asignaciones
+  // 12. Administración
+  
+  private ordenPersonalizado: { [key: string]: number } = {
+    'dashboard': 1,
+    'gestor de informacion': 2,
+    'centro de costo': 3,
+    'propiedades de rubro': 4,
+    'rubros principales': 5,
+    'rubros secundarios': 6,
+    'rubros terciarios': 7,
+    'rubros cuartos': 8,
+    'rubros quintos': 9,
+    'rubros sextos': 10,
+    'asignaciones': 11,
+    'administracion': 12
+  };
+
   private iconosPorPalabra: { [key: string]: string } = {
+    'dashboard': 'home',
+    'inicio': 'home',
+    'gestor': 'database',
+    'informacion': 'database',
+    'centro': 'building',
+    'costo': 'building',
     'propiedades': 'settings',
     'rubro': 'folder',
     'rubros': 'folder',
     'principal': 'folder-tree',
     'secundario': 'layers',
-    'centro': 'building',
-    'costo': 'building',
+    'terciario': 'file-text',
+    'cuarto': 'file',
+    'quinto': 'file',
+    'sexto': 'file',
     'asignacion': 'arrow-left-right',
     'administracion': 'users',
     'usuario': 'users',
     'reporte': 'file-text',
     'informe': 'file-text',
-    'dashboard': 'home',
-    'inicio': 'home',
     'movimiento': 'trending-up',
     'transaccion': 'trending-up',
     'presupuesto': 'dollar-sign',
-    'finanzas': 'dollar-sign',
-    'contabilidad': 'calculator',
-    'factura': 'file-invoice',
-    'pago': 'credit-card',
-    'inventario': 'package',
-    'producto': 'box',
-    'cliente': 'user',
-    'proveedor': 'truck',
-    'proyecto': 'briefcase',
-    'tarea': 'check-square',
-    'calendario': 'calendar',
-    'evento': 'calendar',
-    'configuracion': 'settings',
-    'ajustes': 'settings',
-    'perfil': 'user',
-    'seguridad': 'shield',
-    'ayuda': 'help-circle',
-    'soporte': 'life-buoy',
-    'notificacion': 'bell',
-    'mensaje': 'mail',
-    'documento': 'file',
-    'archivo': 'file',
-    'estadistica': 'bar-chart',
-    'grafico': 'pie-chart',
-    'analisis': 'activity'
+    'finanzas': 'dollar-sign'
   };
 
   constructor(private http: HttpClient) {}
@@ -91,37 +96,62 @@ export class LayoutService {
           return [];
         }
 
+        // Filtrar elementos activos
         const elementosActivos = response.filter(item => item.estado);
         console.log('✅ Elementos activos:', elementosActivos);
         
+        // Eliminar duplicados
         const elementosUnicos = elementosActivos.filter((item, index, self) =>
           index === self.findIndex((t) => t.elemento_id === item.elemento_id)
         );
         console.log('✅ Elementos únicos:', elementosUnicos);
         
+        // Mapear a MenuItem
         const menuItems = elementosUnicos.map(item => {
           const nombreLimpio = item.elemento.nombre.trim();
+          const nombreNormalizado = this.normalizarNombre(nombreLimpio);
           const ruta = this.generarRuta(nombreLimpio);
           const icono = this.obtenerIcono(nombreLimpio);
+          
+          // Obtener orden personalizado o usar 999 por defecto
+          const orden = this.ordenPersonalizado[nombreNormalizado] || 999;
+          
+          console.log(`📌 Elemento: "${nombreLimpio}" → Orden: ${orden}`);
           
           return {
             id: `elemento-${item.elemento_id}`,
             nombre: this.capitalizarNombre(nombreLimpio),
             ruta: ruta,
-            orden: item.elemento_id,
+            orden: orden,
             icono: icono,
             componente: this.obtenerComponente(nombreLimpio)
           };
-        }).sort((a, b) => (a.orden || 0) - (b.orden || 0));
+        });
 
-        console.log('✅ Menu items generados:', menuItems);
-        return menuItems;
+        // Ordenar por el campo 'orden'
+        const menuOrdenado = menuItems.sort((a, b) => (a.orden || 999) - (b.orden || 999));
+
+        console.log('✅ Menu items ordenados:');
+        menuOrdenado.forEach((item, index) => {
+          console.log(`  ${index + 1}. ${item.nombre} (orden: ${item.orden})`);
+        });
+
+        return menuOrdenado;
       }),
       catchError(error => {
         console.error('❌ Error en getMenuItems:', error);
         return of([]);
       })
     );
+  }
+
+  // ==================== MÉTODO AUXILIAR PARA NORMALIZAR NOMBRES ====================
+  private normalizarNombre(nombre: string): string {
+    return nombre
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
   }
 
   private generarRuta(nombre: string): string {
@@ -134,33 +164,33 @@ export class LayoutService {
   }
 
   private obtenerIcono(nombre: string): string {
-    const nombreNormalizado = nombre
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
+    const nombreNormalizado = this.normalizarNombre(nombre);
 
+    // Buscar coincidencia en el diccionario de iconos
     for (const [palabra, icono] of Object.entries(this.iconosPorPalabra)) {
       if (nombreNormalizado.includes(palabra)) {
         return icono;
       }
     }
 
+    // Icono por defecto
     return 'layers';
   }
 
   private obtenerComponente(nombre: string): string {
-    const nombreNormalizado = nombre
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .trim();
+    const nombreNormalizado = this.normalizarNombre(nombre);
 
     const mapeoComponentes: { [key: string]: string } = {
+      'dashboard': 'dashboard',
+      'gestor de informacion': 'gestor-informacion',
+      'centro de costo': 'centros-costo',
       'propiedades de rubro': 'propiedades',
       'rubros principales': 'rubros-principales',
-      'Rublos Terciarios': 'rubros-terciario',
       'rubros secundarios': 'rubros-secundarios',
-      'centro de costo': 'centro-de-costo',
+      'rubros terciarios': 'rubros-terciarios',
+      'rubros cuartos': 'rubros-cuartos',
+      'rubros quintos': 'rubros-quintos',
+      'rubros sextos': 'rubros-sextos',
       'asignaciones': 'asignaciones',
       'administracion': 'administracion'
     };
