@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LayoutService, MenuItem } from '../services/layout.service';
 import { Auth } from '../services/auth';
+import { HistorialService } from '../services/historial.service';
+
 
 interface Notificacion {
   id: number;
@@ -16,7 +18,12 @@ interface Notificacion {
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  imports: [
+    RouterOutlet, 
+    RouterLink, 
+    RouterLinkActive, 
+    CommonModule,
+  ],
   templateUrl: './layout.html',
   styleUrl: './layout.css',
 })
@@ -24,13 +31,16 @@ export class Layout implements OnInit {
   usuario = {
     nombre: 'Usuario',
     rol: 'Cargando...',
-    iniciales: 'U'
+    iniciales: 'U',
+    email: 'usuario@utch.edu.co',
+    telefono: '+57 300 000 0000'
   };
 
   menuItems: MenuItem[] = [];
   tieneNotificaciones = true;
   mostrarDropdown = false;
   mostrarNotificaciones = false;
+  mostrarModalPerfil = false; // ← AGREGAR
   cargandoMenu = true;
 
   notificaciones: Notificacion[] = [
@@ -53,6 +63,40 @@ export class Layout implements OnInit {
   ];
 
   notificacionesNoLeidas: number = 0;
+
+  // ← AGREGAR COLORES PARA ICONOS
+  coloresIconos: { [key: string]: string } = {
+    'home': 'text-blue-500',
+    'folder': 'text-amber-500',
+    'folder-tree': 'text-amber-500',
+    'layers': 'text-purple-500',
+    'settings': 'text-slate-600',
+    'building': 'text-cyan-500',
+    'arrow-left-right': 'text-indigo-500',
+    'users': 'text-orange-500',
+    'trending-up': 'text-green-500',
+    'file-text': 'text-pink-500',
+    'dollar-sign': 'text-emerald-500',
+    'calculator': 'text-blue-600',
+    'file-invoice': 'text-red-500',
+    'credit-card': 'text-purple-600',
+    'package': 'text-yellow-600',
+    'box': 'text-orange-600',
+    'user': 'text-indigo-600',
+    'truck': 'text-green-600',
+    'briefcase': 'text-slate-500',
+    'check-square': 'text-teal-500',
+    'calendar': 'text-rose-500',
+    'shield': 'text-blue-700',
+    'help-circle': 'text-purple-700',
+    'life-buoy': 'text-cyan-600',
+    'bell': 'text-yellow-500',
+    'mail': 'text-blue-400',
+    'file': 'text-gray-500',
+    'bar-chart': 'text-green-700',
+    'pie-chart': 'text-pink-600',
+    'activity': 'text-red-600'
+  };
 
   iconosSVG: { [key: string]: string } = {
     'home': 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
@@ -90,27 +134,48 @@ export class Layout implements OnInit {
   constructor(
     private layoutService: LayoutService,
     private authService: Auth,
-    private router: Router
+    private router: Router,
+    private historialService: HistorialService  // ✅ AGREGAR
   ) {}
-
+  cerrarSesion(): void {
+  console.log('🚪 Iniciando cierre de sesión...');
+  
+  // Limpiar historial
+  this.historialService.limpiarHistorial();
+  
+  // Llamar al logout del servicio
+  this.authService.logout();
+  }
   ngOnInit(): void {
+  // Verificar autenticación al cargar el componente
+    this.verificarAutenticacion();
     this.cargarDatosUsuario();
     this.cargarMenuDesdeAPI();
     this.calcularNotificacionesNoLeidas();
   }
-
+  verificarAutenticacion(): void {
+    if (!this.authService.isAuthenticated()) {
+      console.log('❌ No autenticado, redirigiendo al login');
+      this.router.navigate(['/login']);
+    }
+  }
+  
   cargarDatosUsuario(): void {
     const nombre = this.authService.getNombreUsuario();
     const rol = this.authService.getRolUsuario();
+    const email = this.authService.getCorreoUsuario();
     
     this.usuario = {
       nombre: nombre,
       rol: rol,
-      iniciales: this.obtenerIniciales(nombre)
+      iniciales: this.obtenerIniciales(nombre),
+      email: email || 'usuario@utch.edu.co',
+      telefono: '+57 300 000 0000'
     };
 
     console.log('Datos del usuario cargados:', this.usuario);
   }
+  
 
   obtenerIniciales(nombre: string): string {
     if (!nombre) return 'U';
@@ -131,6 +196,7 @@ export class Layout implements OnInit {
       this.cargandoMenu = false;
       return;
     }
+  
 
     console.log('Cargando menú para persona_id:', personaId);
 
@@ -164,6 +230,30 @@ export class Layout implements OnInit {
 
   getIconoSVG(icono: string): string {
     return this.iconosSVG[icono] || this.iconosSVG['layers'];
+  }
+
+  // ← AGREGAR ESTE MÉTODO
+  getColorIcono(icono: string): string {
+    return this.coloresIconos[icono] || 'text-gray-500';
+  }
+
+  // ← MÉTODOS DEL MODAL DE PERFIL
+  abrirModalPerfil(): void {
+    this.mostrarModalPerfil = true;
+    this.mostrarDropdown = false;
+  }
+
+  cerrarModalPerfil(): void {
+    this.mostrarModalPerfil = false;
+  }
+
+  guardarPerfil(datosActualizados: any): void {
+    this.usuario.nombre = datosActualizados.nombre;
+    this.usuario.email = datosActualizados.email;
+    this.usuario.telefono = datosActualizados.telefono;
+    this.usuario.iniciales = this.obtenerIniciales(datosActualizados.nombre);
+    console.log('Perfil actualizado:', this.usuario);
+    // Aquí irían las llamadas al backend
   }
 
   toggleDropdown(): void {
@@ -237,10 +327,5 @@ export class Layout implements OnInit {
     if (minutos < 60) return `Hace ${minutos} minuto${minutos > 1 ? 's' : ''}`;
     if (horas < 24) return `Hace ${horas} hora${horas > 1 ? 's' : ''}`;
     return `Hace ${dias} día${dias > 1 ? 's' : ''}`;
-  }
-
-  cerrarSesion(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
   }
 }

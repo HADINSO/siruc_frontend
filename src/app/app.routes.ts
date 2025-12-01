@@ -3,6 +3,7 @@ import { Login } from './pages/login/login';
 import { RecuperarCredenciales } from './pages/recuperar-credenciales/recuperar-credenciales';
 import { Layout } from './layout/layout';
 import { Inicio } from './pages/inicio/inicio';
+import { AuthGuard } from './services/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -12,10 +13,12 @@ export const routes: Routes = [
   {
     path: '',
     component: Layout,
+    canActivate: [AuthGuard],
     children: [
       {
         path: 'inicio',
-        component: Inicio
+        component: Inicio,
+        canActivate: [AuthGuard]
       },
       {
         path: 'dashboard',
@@ -24,7 +27,8 @@ export const routes: Routes = [
       },
       {
         path: 'rubros-principales',
-        loadComponent: () => import('./pages/rubros-principales/rubros-principales').then(m => m.RubrosPrincipales)
+        loadComponent: () => import('./pages/rubros-principales/rubros-principales').then(m => m.RubrosPrincipales),
+        canActivate: [AuthGuard] 
       },
       {
         path: 'rubros-secundarios',
@@ -58,4 +62,4 @@ export const routes: Routes = [
   },
   
   { path: '**', redirectTo: '/login' }
-];
+]

@@ -158,11 +158,11 @@ export class LayoutService {
     const mapeoComponentes: { [key: string]: string } = {
       'propiedades de rubro': 'propiedades',
       'rubros principales': 'rubros-principales',
+      'Rublos Terciarios': 'rubros-terciario',
       'rubros secundarios': 'rubros-secundarios',
       'centro de costo': 'centro-de-costo',
       'asignaciones': 'asignaciones',
-      'administracion': 'administracion',
-      'Rublos Terciarios': 'rubros-terciario'
+      'administracion': 'administracion'
     };
 
     return mapeoComponentes[nombreNormalizado] || 'pagina-generica';

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 
 export interface LoginResponse {
@@ -33,7 +34,10 @@ export class Auth {
     2: 'Financiera',
   };
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {}
 
   login(usuario: string, contrasena: string): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(this.apiUrl, { 
@@ -46,14 +50,17 @@ export class Auth {
         if (response.usuario && response.usuario.persona) {
           const personaId = response.usuario.persona.id;
           const nombre = `${response.usuario.persona.nombre} ${response.usuario.persona.apellido}`;
+          const correo = response.usuario.persona.correo;
           
           localStorage.setItem('persona_id', personaId.toString());
           localStorage.setItem('nombre_usuario', nombre);
+          localStorage.setItem('correo_usuario', correo || '');
           localStorage.setItem('usuario', response.usuario.username);
           
           console.log('Guardado en localStorage:');
           console.log('- persona_id:', personaId);
           console.log('- nombre_usuario:', nombre);
+          console.log('- correo_usuario:', correo);
           console.log('- usuario:', response.usuario.username);
         }
         
@@ -77,18 +84,48 @@ export class Auth {
           localStorage.setItem('elementos', JSON.stringify(elementosLimpios));
           console.log('- elementos guardados:', elementosLimpios.length);
         }
+
+        localStorage.setItem('login_timestamp', new Date().getTime().toString());
       })
     );
   }
 
+  logout(): void {
+    console.log('🚪 Iniciando logout...');
+    
+    // PASO 1: Limpiar TODO el localStorage
+    localStorage.clear();
+    console.log('✅ localStorage completamente limpiado');
+    
+    // PASO 2: Limpiar sessionStorage también
+    sessionStorage.clear();
+    console.log('✅ sessionStorage completamente limpiado');
+    
+    // PASO 3: Navegar al login CON replaceUrl
+    this.router.navigate(['/login'], { replaceUrl: true }).then(() => {
+      console.log('✅ Navegación a /login completada');
+      
+      // PASO 4: Recargar la página
+      window.location.href = '/login';
+    });
+  }
+  isAuthenticated(): boolean {
+    const token = localStorage.getItem('token');
+    const personaId = localStorage.getItem('persona_id');
+    return !!(token && personaId);
+  }
+
   getPersonaId(): number | null {
     const id = localStorage.getItem('persona_id');
-    console.log('Obteniendo persona_id de localStorage:', id);
     return id ? parseInt(id, 10) : null;
   }
 
   getNombreUsuario(): string {
     return localStorage.getItem('nombre_usuario') || localStorage.getItem('usuario') || 'Usuario';
+  }
+
+  getCorreoUsuario(): string {
+    return localStorage.getItem('correo_usuario') || '';
   }
 
   getRolUsuario(): string {
@@ -105,17 +142,11 @@ export class Auth {
     return elementos ? JSON.parse(elementos) : [];
   }
 
-  logout(): void {
-    localStorage.removeItem('persona_id');
-    localStorage.removeItem('nombre_usuario');
-    localStorage.removeItem('rol_usuario');
-    localStorage.removeItem('rol_id');
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    localStorage.removeItem('elementos');
+  getToken(): string | null {
+    return localStorage.getItem('token');
   }
 
-  isAuthenticated(): boolean {
-    return !!this.getPersonaId();
+  getUsername(): string {
+    return localStorage.getItem('usuario') || '';
   }
 }
