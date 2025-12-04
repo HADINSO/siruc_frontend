@@ -26,6 +26,10 @@ export const routes: Routes = [
         pathMatch: 'full'
       },
       {
+        path: 'gestor-de-informacion',
+        loadComponent: () => import('./pages/gestor-de-informacion/gestor-de-informacion').then(m => m.GestorDeInformacion)
+      },
+      {
         path: 'rubros-principales',
         loadComponent: () => import('./pages/rubros-principales/rubros-principales').then(m => m.RubrosPrincipales),
         canActivate: [AuthGuard] 

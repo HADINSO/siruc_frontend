@@ -62,24 +62,39 @@ export class CentrosCost implements OnInit, OnDestroy {
 
   cargarDatos(): void {
     this.cargando = true;
-    this.centrosCostoService.getAllCentros().subscribe({
-      next: (centros) => {
-        this.centros = centros.map(centro => ({
+    
+    // Cargar centros y dependencias en paralelo
+    Promise.all([
+      this.centrosCostoService.getAllCentros().toPromise(),
+      this.centrosCostoService.getAllDependencias().toPromise()
+    ]).then(([centros, todasDependencias]) => {
+      console.log('✅ Centros recibidos:', centros);
+      console.log('✅ Todas las dependencias recibidas:', todasDependencias);
+      
+      // Asignar dependencias a cada centro
+      this.centros = (centros || []).map(centro => {
+        const dependenciasCentro = (todasDependencias || []).filter(dep => 
+          Number(dep.centro_costo_id) === Number(centro.id)
+        );
+        
+        console.log(`Centro ${centro.nombre} (ID: ${centro.id}) tiene ${dependenciasCentro.length} dependencias`);
+        
+        return {
           ...centro,
-          dependencias: centro.dependencias || [],
-          cantidadDependencias: centro.dependencias?.length || 0,
+          dependencias: dependenciasCentro,
+          cantidadDependencias: dependenciasCentro.length,
           expandido: false
-        }));
-        this.cargando = false;
-        this.cdr.detectChanges();
-        console.log('✅ Centros cargados:', this.centros);
-      },
-      error: (error) => {
-        console.error('❌ Error al cargar centros de costo:', error);
-        this.toast.error('Error', 'No se pudieron cargar los centros de costo');
-        this.cargando = false;
-        this.cdr.detectChanges();
-      }
+        };
+      });
+      
+      console.log('✅ Centros con dependencias asignadas:', this.centros);
+      this.cargando = false;
+      this.cdr.detectChanges();
+    }).catch(error => {
+      console.error('❌ Error al cargar datos:', error);
+      this.toast.error('Error', 'No se pudieron cargar los centros de costo');
+      this.cargando = false;
+      this.cdr.detectChanges();
     });
   }
 
@@ -93,21 +108,29 @@ export class CentrosCost implements OnInit, OnDestroy {
 
   toggleExpandir(centro: CentroCostoExtended): void {
     centro.expandido = !centro.expandido;
-    
-    if (centro.expandido && (!centro.dependencias || centro.dependencias.length === 0)) {
-      this.cargarDependencias(centro);
-    }
+    // Las dependencias ya están cargadas desde cargarDatos()
+    console.log(`Centro ${centro.nombre} expandido:`, centro.expandido);
+    console.log(`Dependencias del centro:`, centro.dependencias);
   }
 
   cargarDependencias(centro: CentroCostoExtended): void {
     console.log('🔍 Cargando dependencias para centro:', centro.id);
     
-    this.centrosCostoService.getDependenciasByCentro(centro.id).subscribe({
-      next: (dependencias) => {
-        centro.dependencias = dependencias;
-        centro.cantidadDependencias = dependencias.length;
+    // ✅ CORREGIDO: Usar getAllDependencias y filtrar localmente
+    this.centrosCostoService.getAllDependencias().subscribe({
+      next: (todasDependencias) => {
+        console.log('📦 Todas las dependencias recibidas:', todasDependencias);
+        
+        // Filtrar por centro_costo_id
+        const dependenciasFiltradas = todasDependencias.filter(dep => 
+          Number(dep.centro_costo_id) === Number(centro.id)
+        );
+        
+        console.log(`✅ Dependencias filtradas para centro ${centro.id}:`, dependenciasFiltradas);
+        
+        centro.dependencias = dependenciasFiltradas;
+        centro.cantidadDependencias = dependenciasFiltradas.length;
         this.cdr.detectChanges();
-        console.log('✅ Dependencias cargadas:', dependencias);
       },
       error: (error) => {
         console.error('❌ Error al cargar dependencias:', error);

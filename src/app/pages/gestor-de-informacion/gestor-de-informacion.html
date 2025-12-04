@@ -1,0 +1,436 @@
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+  
+  <!-- ==================== LOADING ==================== -->
+  <div *ngIf="cargando" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-8 shadow-2xl">
+      <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto"></div>
+      <p class="mt-4 text-slate-700 font-semibold">Cargando...</p>
+    </div>
+  </div>
+
+  <!-- ==================== HEADER ==================== -->
+  <div class="max-w-7xl mx-auto mb-8">
+    <h1 class="text-4xl font-bold text-slate-800 mb-2">Gestor de Información</h1>
+    <p class="text-slate-600">Sistema de gestión de rubros por centro de costo y dependencia</p>
+    
+    <!-- Indicador de Progreso -->
+    <div class="mt-6 flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <div [class]="paso === 'relaciones' ? 'bg-blue-600 text-white' : 'bg-slate-300 text-slate-600'" 
+             class="w-10 h-10 rounded-full flex items-center justify-center font-bold">
+          1
+        </div>
+        <span [class]="paso === 'relaciones' ? 'text-blue-600 font-semibold' : 'text-slate-500'">Relaciones</span>
+        
+        <div class="w-16 h-1 bg-slate-300"></div>
+        
+        <div [class]="paso === 'fichas' ? 'bg-blue-600 text-white' : 'bg-slate-300 text-slate-600'" 
+             class="w-10 h-10 rounded-full flex items-center justify-center font-bold">
+          2
+        </div>
+        <span [class]="paso === 'fichas' ? 'text-blue-600 font-semibold' : 'text-slate-500'">Fichas</span>
+        
+        <div class="w-16 h-1 bg-slate-300"></div>
+        
+        <div [class]="paso === 'llenado' ? 'bg-blue-600 text-white' : 'bg-slate-300 text-slate-600'" 
+             class="w-10 h-10 rounded-full flex items-center justify-center font-bold">
+          3
+        </div>
+        <span [class]="paso === 'llenado' ? 'text-blue-600 font-semibold' : 'text-slate-500'">Llenado</span>
+        
+        <div class="w-16 h-1 bg-slate-300"></div>
+        
+        <div [class]="paso === 'historial' ? 'bg-blue-600 text-white' : 'bg-slate-300 text-slate-600'" 
+             class="w-10 h-10 rounded-full flex items-center justify-center font-bold">
+          4
+        </div>
+        <span [class]="paso === 'historial' ? 'text-blue-600 font-semibold' : 'text-slate-500'">Historial</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PASO 1: RELACIONES ==================== -->
+  <div *ngIf="paso === 'relaciones'" class="max-w-7xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+      
+      <!-- Pestañas -->
+      <div class="flex border-b border-slate-200">
+        <button 
+          (click)="cambiarPestanaRelaciones('centro')"
+          [class]="pestanaActivaRelaciones === 'centro' 
+            ? 'bg-blue-600 text-white' 
+            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+          class="flex-1 px-8 py-4 font-semibold transition-colors">
+          📍 Centro de Costo
+        </button>
+        <button 
+          (click)="cambiarPestanaRelaciones('dependencia')"
+          [class]="pestanaActivaRelaciones === 'dependencia' 
+            ? 'bg-green-600 text-white' 
+            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+          class="flex-1 px-8 py-4 font-semibold transition-colors">
+          🏢 Dependencia
+        </button>
+      </div>
+
+      <!-- Contenido Pestaña Centro -->
+      <div *ngIf="pestanaActivaRelaciones === 'centro'" class="p-8">
+        <h2 class="text-2xl font-bold text-blue-700 mb-6">Centro de Costo</h2>
+        
+        <div class="grid grid-cols-2 gap-6 mb-6">
+          <!-- Período Fiscal -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Período Fiscal *
+            </label>
+            <select 
+              [(ngModel)]="periodoSeleccionado"
+              (ngModelChange)="onChangePeriodo()"
+              class="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600">
+              <option [value]="null" disabled>Seleccione...</option>
+              <option *ngFor="let periodo of periodos" [value]="periodo.id">
+                {{ periodo.anio }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Centro de Costo -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Centro de Costo *
+            </label>
+            <select 
+              [(ngModel)]="centroSeleccionado"
+              (ngModelChange)="onChangeCentro()"
+              class="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600">
+              <option [value]="null" disabled>Seleccione...</option>
+              <option *ngFor="let centro of centrosCosto" [value]="centro.id">
+                {{ centro.nombre }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Rubros Disponibles -->
+        <div class="mt-8">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-slate-700">Rubros Principales Disponibles</h3>
+            <div class="space-x-2">
+              <button 
+                (click)="agregarTodos('centro')"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                ✓ Agregar Todos
+              </button>
+              <button 
+                (click)="quitarTodos('centro')"
+                class="px-4 py-2 bg-slate-400 text-white rounded-lg hover:bg-slate-500 transition-colors text-sm">
+                ✗ Quitar Todos
+              </button>
+            </div>
+          </div>
+
+          <div class="border-2 border-slate-300 rounded-xl p-4 max-h-96 overflow-y-auto">
+            <div *ngFor="let rubro of rubrosSeleccionadosCentro" 
+                 [class]="rubro.seleccionado ? 'flex items-center p-3 bg-blue-50 rounded-lg transition-colors' : 'flex items-center p-3 hover:bg-slate-50 rounded-lg transition-colors'">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="rubro.seleccionado"
+                class="w-5 h-5 text-blue-600 rounded">
+              <span class="ml-3 font-mono text-sm bg-slate-100 px-3 py-1 rounded">{{ rubro.cuenta }}</span>
+              <span class="ml-3 text-slate-700">{{ rubro.nombre }}</span>
+              <span *ngIf="rubro.seleccionado" class="ml-auto text-xs bg-blue-600 text-white px-2 py-1 rounded-full">
+                Vinculado
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contenido Pestaña Dependencia -->
+      <div *ngIf="pestanaActivaRelaciones === 'dependencia'" class="p-8">
+        <h2 class="text-2xl font-bold text-green-700 mb-6">Dependencia</h2>
+        
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            Dependencia *
+          </label>
+          <select 
+            [(ngModel)]="dependenciaSeleccionada"
+            class="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600"
+            [disabled]="!centroSeleccionado || dependencias.length === 0">
+            <option [value]="null" disabled>Seleccione...</option>
+            <option *ngFor="let dep of dependencias" [value]="dep.id">
+              {{ dep.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Rubros Disponibles -->
+        <div class="mt-8">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-slate-700">Rubros Principales Disponibles</h3>
+            <div class="space-x-2">
+              <button 
+                (click)="agregarTodos('dependencia')"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
+                ✓ Agregar Todos
+              </button>
+              <button 
+                (click)="quitarTodos('dependencia')"
+                class="px-4 py-2 bg-slate-400 text-white rounded-lg hover:bg-slate-500 transition-colors text-sm">
+                ✗ Quitar Todos
+              </button>
+            </div>
+          </div>
+
+          <div class="border-2 border-slate-300 rounded-xl p-4 max-h-96 overflow-y-auto">
+            <div *ngFor="let rubro of rubrosSeleccionadosDependencia" 
+                 [class]="rubro.seleccionado ? 'flex items-center p-3 bg-green-50 rounded-lg transition-colors' : 'flex items-center p-3 hover:bg-slate-50 rounded-lg transition-colors'">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="rubro.seleccionado"
+                class="w-5 h-5 text-green-600 rounded">
+              <span class="ml-3 font-mono text-sm bg-slate-100 px-3 py-1 rounded">{{ rubro.cuenta }}</span>
+              <span class="ml-3 text-slate-700">{{ rubro.nombre }}</span>
+              <span *ngIf="rubro.seleccionado" class="ml-auto text-xs bg-green-600 text-white px-2 py-1 rounded-full">
+                Vinculado
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón Continuar -->
+        <div class="mt-8 text-center">
+          <button 
+            (click)="continuarAFichas()"
+            class="px-8 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all">
+            Continuar a Fichas →
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== PASO 2: FICHAS ==================== -->
+  <div *ngIf="paso === 'fichas'" class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+      <h2 class="text-3xl font-bold text-slate-800 mb-6">Gestión de Fichas</h2>
+      <p class="text-slate-600 mb-8">Las fichas representan las columnas de valores que llenarás en el siguiente paso.</p>
+
+      <button 
+        (click)="abrirModalFichas()"
+        class="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors mb-6">
+        + Nueva Ficha
+      </button>
+
+      <!-- Lista de Fichas -->
+      <div class="grid grid-cols-3 gap-4">
+        <div *ngFor="let ficha of fichas" 
+             class="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-xl border-2 border-slate-200 relative group">
+          <h3 class="font-bold text-slate-800 text-lg">{{ ficha.nombre }}</h3>
+          <button 
+            (click)="eliminarFicha(ficha)"
+            class="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+            ✕
+          </button>
+        </div>
+
+        <div *ngIf="fichas.length === 0" class="col-span-3 text-center py-12 text-slate-400">
+          No hay fichas creadas. Click en "+ Nueva Ficha" para crear una.
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <div class="mt-8 flex justify-between">
+        <button 
+          (click)="volverAPaso('relaciones')"
+          class="px-6 py-3 bg-slate-300 text-slate-700 rounded-xl font-semibold hover:bg-slate-400 transition-colors">
+          ← Volver
+        </button>
+        <button 
+          (click)="continuarALlenado()"
+          class="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors">
+          Continuar al Llenado →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PASO 3: LLENADO ==================== -->
+  <div *ngIf="paso === 'llenado'" class="max-w-7xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+      
+      <!-- Pestañas -->
+      <div class="flex border-b border-slate-200">
+        <button 
+          (click)="cambiarPestanaLlenado('centro')"
+          [class]="pestanaActivaLlenado === 'centro' 
+            ? 'bg-blue-600 text-white' 
+            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+          class="flex-1 px-8 py-4 font-semibold transition-colors">
+          📍 Centro de Costo
+        </button>
+        <button 
+          (click)="cambiarPestanaLlenado('dependencia')"
+          [class]="pestanaActivaLlenado === 'dependencia' 
+            ? 'bg-green-600 text-white' 
+            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+          class="flex-1 px-8 py-4 font-semibold transition-colors">
+          🏢 Dependencia
+        </button>
+      </div>
+
+      <!-- Contenido Centro -->
+      <div *ngIf="pestanaActivaLlenado === 'centro'" class="p-8">
+        <h2 class="text-2xl font-bold text-blue-700 mb-6">Llenado - Centro de Costo</h2>
+        
+        <div *ngFor="let rubro of rubrosConValoresCentro" class="mb-6">
+          <ng-container *ngTemplateOutlet="rubroTemplate; context: {rubro: rubro, tipo: 'centro'}"></ng-container>
+        </div>
+      </div>
+
+      <!-- Contenido Dependencia -->
+      <div *ngIf="pestanaActivaLlenado === 'dependencia'" class="p-8">
+        <h2 class="text-2xl font-bold text-green-700 mb-6">Llenado - Dependencia</h2>
+        
+        <div *ngFor="let rubro of rubrosConValoresDependencia" class="mb-6">
+          <ng-container *ngTemplateOutlet="rubroTemplate; context: {rubro: rubro, tipo: 'dependencia'}"></ng-container>
+        </div>
+
+        <!-- Botón Finalizar -->
+        <div class="mt-8 text-center">
+          <button 
+            (click)="finalizar()"
+            class="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all">
+            ✓ Finalizar y Guardar
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== PASO 4: HISTORIAL ==================== -->
+  <div *ngIf="paso === 'historial'" class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
+      <div class="text-6xl mb-4">✅</div>
+      <h2 class="text-3xl font-bold text-green-600 mb-4">¡Información Guardada Exitosamente!</h2>
+      <p class="text-slate-600 mb-8">Los datos han sido guardados correctamente en el sistema.</p>
+
+      <div class="bg-slate-50 rounded-xl p-6 mb-8 text-left">
+        <h3 class="font-bold text-slate-700 mb-4">Resumen:</h3>
+        <p class="text-slate-600">Período: <span class="font-semibold">{{ getNombrePeriodo() }}</span></p>
+        <p class="text-slate-600">Centro de Costo: <span class="font-semibold">{{ getNombreCentro() }}</span></p>
+        <p class="text-slate-600">Dependencia: <span class="font-semibold">{{ getNombreDependencia() }}</span></p>
+      </div>
+
+      <div class="flex justify-center space-x-4">
+        <button 
+          (click)="descargarReporteCentro()"
+          class="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center space-x-2">
+          <span>📥</span>
+          <span>Descargar Centro</span>
+        </button>
+        <button 
+          (click)="descargarReporteDependencia()"
+          class="px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center space-x-2">
+          <span>📥</span>
+          <span>Descargar Dependencia</span>
+        </button>
+        <button 
+          (click)="volverAPaso('relaciones')"
+          class="px-6 py-3 bg-slate-300 text-slate-700 rounded-xl font-semibold hover:bg-slate-400 transition-colors">
+          ← Volver al Inicio
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL FICHAS ==================== -->
+  <div *ngIf="mostrarModalFichas" 
+       class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+       (click)="cerrarModalFichas()">
+    <div class="bg-white rounded-2xl p-8 w-96 shadow-2xl" (click)="$event.stopPropagation()">
+      <h3 class="text-2xl font-bold text-slate-800 mb-6">Nueva Ficha</h3>
+      
+      <label class="block text-sm font-semibold text-slate-700 mb-2">
+        Nombre de la Ficha
+      </label>
+      <input 
+        type="text" 
+        [(ngModel)]="nuevaFicha"
+        (keyup.enter)="crearFicha()"
+        placeholder="Ej: Recursos Propios"
+        class="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 mb-6">
+
+      <div class="flex justify-end space-x-3">
+        <button 
+          (click)="cerrarModalFichas()"
+          class="px-6 py-3 bg-slate-300 text-slate-700 rounded-xl font-semibold hover:bg-slate-400 transition-colors">
+          Cancelar
+        </button>
+        <button 
+          (click)="crearFicha()"
+          class="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors">
+          Crear
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== TEMPLATE RECURSIVO RUBRO ==================== -->
+<ng-template #rubroTemplate let-rubro="rubro" let-tipo="tipo">
+  <div class="border-2 border-slate-200 rounded-xl p-4 mb-4">
+    <!-- Header del Rubro -->
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center space-x-3">
+        <button 
+          *ngIf="rubro.hijos && rubro.hijos.length > 0"
+          (click)="toggleExpansion(rubro)"
+          class="w-8 h-8 bg-slate-200 rounded-lg hover:bg-slate-300 transition-colors">
+          {{ rubro.expandido ? '▼' : '▶' }}
+        </button>
+        <span class="font-mono text-sm bg-slate-100 px-3 py-1 rounded">{{ rubro.cuenta }}</span>
+        <span class="font-semibold text-slate-800">{{ rubro.nombre }}</span>
+        <span [class]="rubro.tipo === 'principal' ? 'bg-blue-100 text-blue-700' : 
+                       rubro.tipo === 'secundario' ? 'bg-green-100 text-green-700' : 
+                       'bg-purple-100 text-purple-700'"
+              class="text-xs px-2 py-1 rounded-full font-bold">
+          {{ rubro.tipo === 'principal' ? 'PRINCIPAL' : rubro.tipo === 'secundario' ? 'SECUNDARIO' : 'TERCIARIO' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Inputs de Fichas -->
+    <div class="grid grid-cols-3 gap-4 mb-4">
+      <div *ngFor="let ficha of fichas">
+        <label class="block text-sm font-semibold text-slate-600 mb-1">{{ ficha.nombre }}</label>
+        <input 
+          type="number" 
+          [(ngModel)]="rubro.valores[ficha.id]"
+          placeholder="0"
+          step="any"
+          min="0"
+          max="999999999999"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+    </div>
+
+    <!-- Botón Guardar -->
+    <button 
+      (click)="guardarRubro(rubro, tipo)"
+      class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+      💾 Guardar Rubro
+    </button>
+
+    <!-- Hijos (Recursivo) -->
+    <div *ngIf="rubro.expandido && rubro.hijos && rubro.hijos.length > 0" class="ml-8 mt-4">
+      <div *ngFor="let hijo of rubro.hijos">
+        <ng-container *ngTemplateOutlet="rubroTemplate; context: {rubro: hijo, tipo: tipo}"></ng-container>
+      </div>
+    </div>
+  </div>
+</ng-template>
