@@ -47,6 +47,12 @@ export class Auth {
       tap(response => {
         console.log('Respuesta completa del login:', response);
         
+        // ⭐ NUEVO: Guardar el ID del usuario (IMPORTANTE para el perfil)
+        if (response.usuario && response.usuario.id) {
+          localStorage.setItem('usuario_id', response.usuario.id.toString());
+          console.log('- usuario_id:', response.usuario.id);
+        }
+        
         if (response.usuario && response.usuario.persona) {
           const personaId = response.usuario.persona.id;
           const nombre = `${response.usuario.persona.nombre} ${response.usuario.persona.apellido}`;
@@ -109,10 +115,17 @@ export class Auth {
       window.location.href = '/login';
     });
   }
+
   isAuthenticated(): boolean {
     const token = localStorage.getItem('token');
-    const personaId = localStorage.getItem('persona_id');
-    return !!(token && personaId);
+    const usuarioId = localStorage.getItem('usuario_id');
+    return !!(token && usuarioId);
+  }
+
+  // ⭐ NUEVO: Obtener ID del usuario logueado
+  getUsuarioId(): number | null {
+    const id = localStorage.getItem('usuario_id');
+    return id ? parseInt(id, 10) : null;
   }
 
   getPersonaId(): number | null {

@@ -1,0 +1,291 @@
+<!-- Modal Backdrop -->
+<div 
+  *ngIf="mostrar"
+  class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4"
+  (click)="cerrarModal()"
+>
+  <!-- Modal Container -->
+  <div 
+    class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto z-50"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Indicador de carga -->
+    <div *ngIf="cargando" class="flex items-center justify-center h-96">
+      <div class="text-center">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-emerald-600 border-t-transparent"></div>
+        <p class="mt-4 text-gray-600">Cargando perfil...</p>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error && !cargando" class="bg-red-50 border-b-4 border-red-500 p-6">
+      <p class="text-red-700 font-semibold">{{ error }}</p>
+      <button 
+        (click)="cargarDatos()"
+        class="mt-3 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+      >
+        Reintentar
+      </button>
+    </div>
+
+    <!-- Contenido cuando carga correctamente -->
+    <ng-container *ngIf="!cargando && !error">
+      <!-- Header con gradiente -->
+      <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 px-8 py-10 relative">
+        <button
+          (click)="cerrarModal()"
+          class="absolute top-6 right-6 text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <!-- Info superior -->
+        <div class="flex gap-6 items-start">
+          <!-- Avatar grande -->
+          <div class="relative">
+            <div class="h-24 w-24 rounded-full bg-white flex items-center justify-center ring-4 ring-white shadow-lg">
+              <span class="text-3xl font-bold text-emerald-600">{{ usuario.iniciales }}</span>
+            </div>
+            <div class="absolute -bottom-2 -right-2 bg-amber-400 rounded-full p-2 ring-4 ring-white">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-900" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Datos básicos -->
+          <div class="flex-1 text-white">
+            <h1 class="text-4xl font-bold mb-2">{{ usuario.nombre }} {{ usuario.apellido }}</h1>
+            <div class="flex items-center gap-3 mb-3">
+              <span class="bg-yellow-300 text-yellow-900 px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-2">
+                ⭐ {{ usuario.rol }}
+              </span>
+              <span class="text-emerald-100">@{{ usuario.usuario }}</span>
+            </div>
+
+            <!-- Departamento y fecha -->
+            <div class="space-y-1 text-emerald-100 text-sm">
+              <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                <span>{{ usuario.telefono }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>Desde {{ usuario.fechaIngreso }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contenido principal -->
+      <div class="p-8">
+        <!-- Estadísticas -->
+        <div class="grid grid-cols-4 gap-4 mb-8">
+          <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-4 text-center">
+            <div class="text-3xl font-bold text-yellow-600 mb-1">{{ usuario.estadisticas.rubros }}</div>
+            <div class="text-sm text-gray-600">Rubros</div>
+          </div>
+          <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 text-center">
+            <div class="text-3xl font-bold text-blue-600 mb-1">{{ usuario.estadisticas.movimientos }}</div>
+            <div class="text-sm text-gray-600">Movimientos</div>
+          </div>
+          <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 text-center">
+            <div class="text-3xl font-bold text-purple-600 mb-1">{{ usuario.estadisticas.asignaciones }}</div>
+            <div class="text-sm text-gray-600">Asignaciones</div>
+          </div>
+          <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4 text-center">
+            <div class="text-3xl font-bold text-emerald-600 mb-1">{{ usuario.estadisticas.aprobacion }}%</div>
+            <div class="text-sm text-gray-600">Aprobación</div>
+          </div>
+        </div>
+
+        <!-- Modo normal vs Edición -->
+        <ng-container *ngIf="!editando">
+          <!-- MODO NORMAL -->
+
+          <!-- Información de contacto -->
+          <div class="grid grid-cols-2 gap-8 mb-8">
+            <div class="space-y-4">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">Información de Contacto</h3>
+              
+              <div>
+                <label class="text-sm text-gray-500 block mb-1">Email</label>
+                <div class="flex items-center gap-2 text-gray-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <span>{{ usuario.email }}</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="text-sm text-gray-500 block mb-1">Teléfono</label>
+                <div class="flex items-center gap-2 text-gray-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <span>{{ usuario.telefono }}</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="text-sm text-gray-500 block mb-1">Ubicación</label>
+                <div class="flex items-center gap-2 text-gray-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>{{ usuario.ubicacion }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Insignias y logros -->
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">Insignias y Logros</h3>
+              <div class="space-y-2">
+                <div 
+                  *ngFor="let insignia of usuario.insignias"
+                  [class]="'px-4 py-2 rounded-full text-sm font-semibold ' + getInsigniaColor(insignia)"
+                >
+                  {{ getInsigniaTexto(insignia) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Elementos Asignados -->
+          <div class="mb-8" *ngIf="usuario.elementos.length > 0">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Elementos Asignados</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div 
+                *ngFor="let elemento of usuario.elementos"
+                class="border-l-4 border-blue-500 bg-blue-50 rounded-lg p-4 hover:shadow-md transition-shadow flex items-center gap-3"
+              >
+                <span class="text-2xl">{{ elemento.icono }}</span>
+                <p class="font-semibold text-gray-900 text-sm">{{ elemento.nombre }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Permisos -->
+          <div class="mb-8" *ngIf="usuario.permisos.length > 0">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Permisos y Accesos</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div 
+                *ngFor="let permiso of usuario.permisos"
+                class="border-l-4 border-emerald-500 bg-emerald-50 rounded-lg p-4 hover:shadow-md transition-shadow"
+              >
+                <div class="flex items-start gap-3">
+                  <div class="bg-emerald-500 rounded-lg p-2 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getIconoPermisoDato(permiso.icono)" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-gray-900 text-sm">{{ permiso.nombre }}</p>
+                    <p class="text-xs text-gray-600 mt-1">{{ permiso.descripcion }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="flex gap-4 pt-6 border-t border-gray-200">
+            <button
+              (click)="abrirEdicion()"
+              class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Editar Perfil
+            </button>
+            <button
+              (click)="cerrarModal()"
+              class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold py-3 rounded-lg transition-colors"
+            >
+              Cerrar
+            </button>
+          </div>
+        </ng-container>
+
+        <!-- MODO EDICIÓN -->
+        <ng-container *ngIf="editando">
+          <div class="space-y-6">
+            <h3 class="text-lg font-semibold text-gray-900">Editar Información</h3>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                <input 
+                  [(ngModel)]="usuarioEditando.nombre"
+                  type="text"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Apellido</label>
+                <input 
+                  [(ngModel)]="usuarioEditando.apellido"
+                  type="text"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <input 
+                [(ngModel)]="usuarioEditando.email"
+                type="email"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+              <input 
+                [(ngModel)]="usuarioEditando.telefono"
+                type="tel"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Ubicación</label>
+              <input 
+                [(ngModel)]="usuarioEditando.ubicacion"
+                type="text"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+
+            <div class="flex gap-4 pt-6 border-t border-gray-200">
+              <button
+                (click)="guardarCambios()"
+                class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg transition-colors"
+              >
+                Guardar Cambios
+              </button>
+              <button
+                (click)="cancelarEdicion()"
+                class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold py-3 rounded-lg transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </ng-container>
+  </div>
+</div>
