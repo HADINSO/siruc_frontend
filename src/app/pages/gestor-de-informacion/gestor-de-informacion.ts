@@ -41,7 +41,7 @@ interface RubroConValores {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './gestor-de-informacion.html',
-  styleUrl: './gestor-de-informacion.css'
+  styleUrls: ['./gestor-de-informacion.css']
 })
 export class GestorDeInformacion implements OnInit {
   
@@ -73,6 +73,11 @@ export class GestorDeInformacion implements OnInit {
   
   cargando = false;
   guardando = false;
+
+  // PROPIEDADES DEL MODAL
+  mostrarModalLlenado = false;
+  rubroSeleccionadoModal: RubroConValores | null = null;
+  tipoModalLlenado: 'centro' | 'dependencia' = 'centro';
 
   constructor(
     private gestorService: GestorInformacionService,
@@ -603,6 +608,127 @@ export class GestorDeInformacion implements OnInit {
     }
   }
 
+  // ==================== MÉTODOS DEL MODAL ====================
+  
+  abrirModalLlenado(rubro: RubroConValores, tipo: 'centro' | 'dependencia'): void {
+    this.rubroSeleccionadoModal = rubro;
+    this.tipoModalLlenado = tipo;
+    this.mostrarModalLlenado = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  cerrarModalLlenado(): void {
+    this.mostrarModalLlenado = false;
+    this.rubroSeleccionadoModal = null;
+    document.body.style.overflow = 'auto';
+  }
+
+  async guardarModalLlenado(): Promise<void> {
+    if (!this.rubroSeleccionadoModal) return;
+
+    this.guardando = true;
+    const promesas: Promise<any>[] = [];
+
+    const procesarRubro = (rubro: RubroConValores) => {
+      for (const ficha of this.fichas) {
+        const valor = rubro.valores[ficha.id];
+        
+        if (valor === undefined || valor === null || valor === 0) {
+          continue;
+        }
+
+        const data: any = {
+          ficha_id: ficha.id,
+          periodo_fiscal_id: this.periodoSeleccionado!,
+          valor: valor
+        };
+
+        if (rubro.tipo === 'principal') {
+          data.rublo_principal_id = rubro.id;
+
+          if (rubro.detalleIds[ficha.id]) {
+            promesas.push(
+              firstValueFrom(
+                this.gestorService.updateDetalleRubloPrincipal(rubro.detalleIds[ficha.id], data)
+              )
+            );
+          } else {
+            promesas.push(
+              firstValueFrom(
+                this.gestorService.createDetalleRubloPrincipal(data)
+              ).then((response: any) => {
+                const id = response?.id || response?.data?.id;
+                if (id) {
+                  rubro.detalleIds[ficha.id] = id;
+                }
+              })
+            );
+          }
+        } else if (rubro.tipo === 'secundario') {
+          data.rublo_secundario_id = rubro.id;
+
+          if (rubro.detalleIds[ficha.id]) {
+            promesas.push(
+              firstValueFrom(
+                this.gestorService.updateDetalleRubroSecundario(rubro.detalleIds[ficha.id], data)
+              )
+            );
+          } else {
+            promesas.push(
+              firstValueFrom(
+                this.gestorService.createDetalleRubroSecundario(data)
+              ).then((response: any) => {
+                const id = response?.id || response?.data?.id;
+                if (id) {
+                  rubro.detalleIds[ficha.id] = id;
+                }
+              })
+            );
+          }
+        } else if (rubro.tipo === 'terciario') {
+          data.rublo_terciario_id = rubro.id;
+
+          if (rubro.detalleIds[ficha.id]) {
+            promesas.push(
+              firstValueFrom(
+                this.gestorService.updateDetalleRubroTerciario(rubro.detalleIds[ficha.id], data)
+              )
+            );
+          } else {
+            promesas.push(
+              firstValueFrom(
+                this.gestorService.createDetalleRubroTerciario(data)
+              ).then((response: any) => {
+                const id = response?.id || response?.data?.id;
+                if (id) {
+                  rubro.detalleIds[ficha.id] = id;
+                }
+              })
+            );
+          }
+        }
+      }
+
+      if (rubro.hijos && rubro.hijos.length > 0) {
+        rubro.hijos.forEach(hijo => procesarRubro(hijo));
+      }
+    };
+
+    try {
+      procesarRubro(this.rubroSeleccionadoModal);
+      await Promise.all(promesas);
+      this.toast.success('Éxito', 'Información guardada exitosamente');
+      this.cerrarModalLlenado();
+    } catch (error) {
+      console.error('Error guardando información:', error);
+      this.toast.error('Error', 'Error al guardar la información');
+    } finally {
+      this.guardando = false;
+    }
+  }
+
+  // ==================== FIN MÉTODOS DEL MODAL ====================
+
   guardarRubro(rubro: RubroConValores, tipo: 'centro' | 'dependencia'): void {
     if (!this.fichas || this.fichas.length === 0) {
       this.toast.warning('Sin fichas', 'No hay fichas para guardar valores');
@@ -677,6 +803,96 @@ export class GestorDeInformacion implements OnInit {
         this.guardando = false;
         console.error('Error al guardar:', error);
         this.toast.error('Error', 'No se pudo guardar el rubro');
+      });
+  }
+
+  guardarTodo(tipo: 'centro' | 'dependencia'): void {
+    const rubros = tipo === 'centro' ? this.rubrosConValoresCentro : this.rubrosConValoresDependencia;
+    
+    if (!this.fichas || this.fichas.length === 0) {
+      this.toast.warning('Sin fichas', 'No hay fichas para guardar valores');
+      return;
+    }
+
+    this.guardando = true;
+    const promesas: Promise<any>[] = [];
+
+    const procesarRubro = (rubro: RubroConValores) => {
+      this.fichas.forEach(ficha => {
+        const valor = rubro.valores[ficha.id];
+        
+        if (valor !== undefined && valor !== null && valor !== 0) {
+          const detalleId = rubro.detalleIds[ficha.id];
+          
+          let data: any = {
+            ficha_id: ficha.id,
+            periodo_fiscal_id: this.periodoSeleccionado!,
+            valor: valor
+          };
+
+          if (rubro.tipo === 'principal') {
+            data.rublo_principal_id = rubro.id;
+          } else if (rubro.tipo === 'secundario') {
+            data.rublo_secundario_id = rubro.id;
+          } else if (rubro.tipo === 'terciario') {
+            data.rublo_terciario_id = rubro.id;
+          }
+
+          if (detalleId) {
+            let observable;
+            if (rubro.tipo === 'principal') {
+              observable = this.gestorService.updateDetalleRubloPrincipal(detalleId, data);
+            } else if (rubro.tipo === 'secundario') {
+              observable = this.gestorService.updateDetalleRubroSecundario(detalleId, data);
+            } else {
+              observable = this.gestorService.updateDetalleRubroTerciario(detalleId, data);
+            }
+            promesas.push(firstValueFrom(observable));
+          } else {
+            let observable;
+            if (rubro.tipo === 'principal') {
+              observable = this.gestorService.createDetalleRubloPrincipal(data);
+            } else if (rubro.tipo === 'secundario') {
+              observable = this.gestorService.createDetalleRubroSecundario(data);
+            } else {
+              observable = this.gestorService.createDetalleRubroTerciario(data);
+            }
+            
+            promesas.push(
+              firstValueFrom(observable).then((response: any) => {
+                rubro.detalleIds[ficha.id] = response.id;
+              })
+            );
+          }
+        }
+      });
+
+      if (rubro.hijos && rubro.hijos.length > 0) {
+        rubro.hijos.forEach(hijo => procesarRubro(hijo));
+      }
+    };
+
+    rubros.forEach(rubro => procesarRubro(rubro));
+
+    if (promesas.length === 0) {
+      this.guardando = false;
+      this.toast.warning('Sin valores', 'No hay valores para guardar');
+      return;
+    }
+
+    console.log(`💾 Guardando ${promesas.length} registros...`);
+
+    Promise.all(promesas)
+      .then(() => {
+        this.guardando = false;
+        const tipoNombre = tipo === 'centro' ? 'Centro de Costo' : 'Dependencia';
+        this.toast.success('¡Guardado!', `Todos los valores de ${tipoNombre} guardados exitosamente`);
+        console.log(`✅ ${promesas.length} registros guardados`);
+      })
+      .catch((error) => {
+        this.guardando = false;
+        console.error('❌ Error al guardar:', error);
+        this.toast.error('Error', 'No se pudieron guardar todos los valores');
       });
   }
 

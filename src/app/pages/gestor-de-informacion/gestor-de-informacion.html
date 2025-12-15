@@ -257,55 +257,152 @@
     </div>
   </div>
 
-  <!-- ==================== PASO 3: LLENADO ==================== -->
+  <!-- ==================== PASO 3: LLENADO CON CARDS ==================== -->
   <div *ngIf="paso === 'llenado'" class="max-w-7xl mx-auto">
-    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-      
-      <!-- Pestañas -->
-      <div class="flex border-b border-slate-200">
+    
+    <!-- Pestañas -->
+    <div class="bg-white rounded-t-xl shadow-lg overflow-hidden mb-0">
+      <div class="flex border-b-2 border-slate-200">
         <button 
           (click)="cambiarPestanaLlenado('centro')"
           [class]="pestanaActivaLlenado === 'centro' 
-            ? 'bg-blue-600 text-white' 
+            ? 'bg-blue-600 text-white border-b-4 border-blue-700' 
             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
-          class="flex-1 px-8 py-4 font-semibold transition-colors">
-          📍 Centro de Costo
+          class="flex-1 px-6 py-4 font-semibold transition-colors flex items-center justify-center space-x-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+          <span>Centro de Costo</span>
         </button>
         <button 
           (click)="cambiarPestanaLlenado('dependencia')"
           [class]="pestanaActivaLlenado === 'dependencia' 
-            ? 'bg-green-600 text-white' 
+            ? 'bg-green-600 text-white border-b-4 border-green-700' 
             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
-          class="flex-1 px-8 py-4 font-semibold transition-colors">
-          🏢 Dependencia
+          class="flex-1 px-6 py-4 font-semibold transition-colors flex items-center justify-center space-x-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          <span>Dependencia</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenido Centro -->
+    <div *ngIf="pestanaActivaLlenado === 'centro'" class="bg-white rounded-b-xl shadow-lg p-6">
+      
+      <!-- Header Info -->
+      <div class="mb-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 border-l-4 border-blue-600">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-2xl font-bold text-blue-900">Llenado - Centro de Costo</h2>
+            <p class="text-blue-700 text-sm mt-1">
+              <strong>Centro:</strong> {{ getNombreCentro() }} | 
+              <strong>Período:</strong> {{ getNombrePeriodo() }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de Rubros en Cards -->
+      <div class="space-y-4">
+        <div *ngFor="let rubro of rubrosConValoresCentro" 
+             class="bg-gradient-to-r from-blue-50 to-slate-50 border-2 border-blue-200 rounded-xl p-4 hover:shadow-lg transition-all">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <span class="font-mono text-sm font-bold bg-blue-600 text-white px-3 py-2 rounded-lg">
+                {{ rubro.cuenta }}
+              </span>
+              <div>
+                <h3 class="font-bold text-slate-800 text-lg">{{ rubro.nombre }}</h3>
+                <p class="text-sm text-slate-600">
+                  {{ rubro.hijos ? rubro.hijos.length : 0 }} rubros secundarios
+                </p>
+              </div>
+            </div>
+            <button 
+              (click)="abrirModalLlenado(rubro, 'centro')"
+              class="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center space-x-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+              <span>Llenar Información</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón Volver -->
+      <div class="mt-6 flex justify-between">
+        <button 
+          (click)="volverAPaso('fichas')"
+          class="px-6 py-3 bg-slate-300 text-slate-700 rounded-xl font-semibold hover:bg-slate-400 transition-colors">
+          ← Volver a Fichas
         </button>
       </div>
 
-      <!-- Contenido Centro -->
-      <div *ngIf="pestanaActivaLlenado === 'centro'" class="p-8">
-        <h2 class="text-2xl font-bold text-blue-700 mb-6">Llenado - Centro de Costo</h2>
-        
-        <div *ngFor="let rubro of rubrosConValoresCentro" class="mb-6">
-          <ng-container *ngTemplateOutlet="rubroTemplate; context: {rubro: rubro, tipo: 'centro'}"></ng-container>
+    </div>
+
+    <!-- Contenido Dependencia -->
+    <div *ngIf="pestanaActivaLlenado === 'dependencia'" class="bg-white rounded-b-xl shadow-lg p-6">
+      
+      <!-- Header Info -->
+      <div class="mb-6 bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-4 border-l-4 border-green-600">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-2xl font-bold text-green-900">Llenado - Dependencia</h2>
+            <p class="text-green-700 text-sm mt-1">
+              <strong>Dependencia:</strong> {{ getNombreDependencia() }} | 
+              <strong>Período:</strong> {{ getNombrePeriodo() }}
+            </p>
+          </div>
         </div>
       </div>
 
-      <!-- Contenido Dependencia -->
-      <div *ngIf="pestanaActivaLlenado === 'dependencia'" class="p-8">
-        <h2 class="text-2xl font-bold text-green-700 mb-6">Llenado - Dependencia</h2>
-        
-        <div *ngFor="let rubro of rubrosConValoresDependencia" class="mb-6">
-          <ng-container *ngTemplateOutlet="rubroTemplate; context: {rubro: rubro, tipo: 'dependencia'}"></ng-container>
+      <!-- Lista de Rubros en Cards -->
+      <div class="space-y-4">
+        <div *ngFor="let rubro of rubrosConValoresDependencia" 
+             class="bg-gradient-to-r from-green-50 to-slate-50 border-2 border-green-200 rounded-xl p-4 hover:shadow-lg transition-all">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <span class="font-mono text-sm font-bold bg-green-600 text-white px-3 py-2 rounded-lg">
+                {{ rubro.cuenta }}
+              </span>
+              <div>
+                <h3 class="font-bold text-slate-800 text-lg">{{ rubro.nombre }}</h3>
+                <p class="text-sm text-slate-600">
+                  {{ rubro.hijos ? rubro.hijos.length : 0 }} rubros secundarios
+                </p>
+              </div>
+            </div>
+            <button 
+              (click)="abrirModalLlenado(rubro, 'dependencia')"
+              class="px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center space-x-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+              <span>Llenar Información</span>
+            </button>
+          </div>
         </div>
+      </div>
 
-        <!-- Botón Finalizar -->
-        <div class="mt-8 text-center">
-          <button 
-            (click)="finalizar()"
-            class="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all">
-            ✓ Finalizar y Guardar
-          </button>
-        </div>
+      <!-- Botón Finalizar -->
+      <div class="mt-6 flex justify-between">
+        <button 
+          (click)="volverAPaso('fichas')"
+          class="px-6 py-3 bg-slate-300 text-slate-700 rounded-xl font-semibold hover:bg-slate-400 transition-colors">
+          ← Volver
+        </button>
+
+        <button 
+          (click)="finalizar()"
+          class="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl font-bold text-lg hover:shadow-2xl transition-all flex items-center space-x-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>Finalizar y Guardar</span>
+        </button>
       </div>
 
     </div>
@@ -379,58 +476,163 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL LLENADO (TABLA EXCEL) ==================== -->
+  <div *ngIf="mostrarModalLlenado" 
+       class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+       (click)="cerrarModalLlenado()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] max-h-[90vh] flex flex-col" 
+         (click)="$event.stopPropagation()">
+      
+      <!-- Header del Modal -->
+      <div [ngClass]="tipoModalLlenado === 'centro' ? 'bg-gradient-to-r from-blue-600 to-blue-700' : 'bg-gradient-to-r from-green-600 to-green-700'" 
+           class="px-6 py-4 rounded-t-2xl flex items-center justify-between">
+        <div>
+          <h3 class="text-2xl font-bold text-white">{{ rubroSeleccionadoModal?.nombre }}</h3>
+          <p class="text-sm text-white/90 mt-1">
+            <span class="font-mono bg-white/20 px-2 py-1 rounded">{{ rubroSeleccionadoModal?.cuenta }}</span>
+            <span class="ml-2">{{ getNombreCentro() }} - {{ getNombrePeriodo() }}</span>
+          </p>
+        </div>
+        <button 
+          (click)="cerrarModalLlenado()"
+          class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Contenido del Modal - Tabla Excel -->
+      <div class="flex-1 overflow-auto p-6">
+        <div class="border-2 border-slate-300 rounded-xl overflow-auto" style="max-height: calc(90vh - 250px);">
+          <table class="w-full border-collapse" style="min-width: 1000px;">
+            
+            <!-- HEADER -->
+            <thead class="sticky top-0 z-30" [ngClass]="tipoModalLlenado === 'centro' ? 'bg-gradient-to-r from-blue-600 to-blue-700' : 'bg-gradient-to-r from-green-600 to-green-700'">
+              <tr>
+                <th class="border border-white/20 px-4 py-3 text-left text-white font-bold text-sm sticky left-0 z-40" 
+                    [ngClass]="tipoModalLlenado === 'centro' ? 'bg-blue-600' : 'bg-green-600'"
+                    style="width: 120px;">
+                  RUBRO
+                </th>
+                <th class="border border-white/20 px-4 py-3 text-left text-white font-bold text-sm sticky left-[120px] z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]" 
+                    [ngClass]="tipoModalLlenado === 'centro' ? 'bg-blue-600' : 'bg-green-600'"
+                    style="min-width: 300px;">
+                  NOMBRE
+                </th>
+                <th *ngFor="let ficha of fichas" 
+                    class="border border-white/20 px-4 py-3 text-center text-white font-bold text-sm" 
+                    style="min-width: 150px;">
+                  {{ ficha.nombre }}
+                </th>
+              </tr>
+            </thead>
+
+            <!-- BODY -->
+            <tbody>
+              <ng-container *ngTemplateOutlet="filaModalRecursiva; context: {rubro: rubroSeleccionadoModal, nivel: 0}"></ng-container>
+            </tbody>
+
+          </table>
+        </div>
+      </div>
+
+      <!-- Footer del Modal -->
+      <div class="px-6 py-4 bg-slate-50 rounded-b-2xl border-t-2 border-slate-200 flex justify-between">
+        <button 
+          (click)="cerrarModalLlenado()"
+          class="px-6 py-3 bg-slate-300 text-slate-700 rounded-xl font-semibold hover:bg-slate-400 transition-colors">
+          Cancelar
+        </button>
+        <button 
+          (click)="guardarModalLlenado()"
+          [disabled]="guardando"
+          [ngClass]="tipoModalLlenado === 'centro' ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800' : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'"
+          class="px-8 py-3 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center space-x-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+          </svg>
+          <span>{{ guardando ? 'Guardando...' : 'Guardar Todo' }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
-<!-- ==================== TEMPLATE RECURSIVO RUBRO ==================== -->
-<ng-template #rubroTemplate let-rubro="rubro" let-tipo="tipo">
-  <div class="border-2 border-slate-200 rounded-xl p-4 mb-4">
-    <!-- Header del Rubro -->
-    <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center space-x-3">
+<!-- ==================== TEMPLATE FILA MODAL (RECURSIVO) ==================== -->
+<ng-template #filaModalRecursiva let-rubro="rubro" let-nivel="nivel">
+  
+  <!-- FILA -->
+  <tr [ngClass]="{
+    'bg-blue-50': nivel === 0,
+    'bg-slate-50': nivel === 1,
+    'bg-white': nivel === 2
+  }" class="hover:bg-blue-100 transition-colors">
+    
+    <!-- CUENTA -->
+    <td class="border border-slate-300 px-3 py-2 font-mono text-xs font-bold text-slate-700 sticky left-0 z-20"
+        [ngClass]="{
+          'bg-blue-50 hover:bg-blue-100': nivel === 0,
+          'bg-slate-50 hover:bg-blue-100': nivel === 1,
+          'bg-white hover:bg-blue-100': nivel === 2
+        }">
+      {{ rubro.cuenta }}
+    </td>
+
+    <!-- NOMBRE -->
+    <td class="border border-slate-300 px-3 py-2 sticky left-[120px] z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)]"
+        [ngClass]="{
+          'bg-blue-50 hover:bg-blue-100': nivel === 0,
+          'bg-slate-50 hover:bg-blue-100': nivel === 1,
+          'bg-white hover:bg-blue-100': nivel === 2
+        }">
+      <div class="flex items-center space-x-2" [style.padding-left.px]="nivel * 20">
         <button 
           *ngIf="rubro.hijos && rubro.hijos.length > 0"
           (click)="toggleExpansion(rubro)"
-          class="w-8 h-8 bg-slate-200 rounded-lg hover:bg-slate-300 transition-colors">
-          {{ rubro.expandido ? '▼' : '▶' }}
+          class="w-6 h-6 flex items-center justify-center bg-slate-200 hover:bg-slate-300 rounded transition-colors flex-shrink-0">
+          <svg *ngIf="!rubro.expandido" class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+          <svg *ngIf="rubro.expandido" class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
         </button>
-        <span class="font-mono text-sm bg-slate-100 px-3 py-1 rounded">{{ rubro.cuenta }}</span>
-        <span class="font-semibold text-slate-800">{{ rubro.nombre }}</span>
-        <span [class]="rubro.tipo === 'principal' ? 'bg-blue-100 text-blue-700' : 
-                       rubro.tipo === 'secundario' ? 'bg-green-100 text-green-700' : 
-                       'bg-purple-100 text-purple-700'"
-              class="text-xs px-2 py-1 rounded-full font-bold">
-          {{ rubro.tipo === 'principal' ? 'PRINCIPAL' : rubro.tipo === 'secundario' ? 'SECUNDARIO' : 'TERCIARIO' }}
+
+        <span class="w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold flex-shrink-0"
+              [ngClass]="{
+                'bg-blue-200 text-blue-700': rubro.tipo === 'principal',
+                'bg-green-200 text-green-700': rubro.tipo === 'secundario',
+                'bg-purple-200 text-purple-700': rubro.tipo === 'terciario'
+              }">
+          {{ rubro.tipo === 'principal' ? 'P' : rubro.tipo === 'secundario' ? 'S' : 'T' }}
         </span>
-      </div>
-    </div>
 
-    <!-- Inputs de Fichas -->
-    <div class="grid grid-cols-3 gap-4 mb-4">
-      <div *ngFor="let ficha of fichas">
-        <label class="block text-sm font-semibold text-slate-600 mb-1">{{ ficha.nombre }}</label>
-        <input 
-          type="number" 
-          [(ngModel)]="rubro.valores[ficha.id]"
-          placeholder="0"
-          step="any"
-          min="0"
-          max="999999999999"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <span class="font-semibold text-slate-800 text-sm">{{ rubro.nombre }}</span>
       </div>
-    </div>
+    </td>
 
-    <!-- Botón Guardar -->
-    <button 
-      (click)="guardarRubro(rubro, tipo)"
-      class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
-      💾 Guardar Rubro
-    </button>
+    <!-- INPUTS FICHAS -->
+    <td *ngFor="let ficha of fichas" class="border border-slate-300 px-2 py-1 bg-white">
+      <input 
+        type="number" 
+        [(ngModel)]="rubro.valores[ficha.id]"
+        placeholder="0"
+        step="any"
+        min="0"
+        max="999999999999"
+        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-right font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400 transition-colors">
+    </td>
 
-    <!-- Hijos (Recursivo) -->
-    <div *ngIf="rubro.expandido && rubro.hijos && rubro.hijos.length > 0" class="ml-8 mt-4">
-      <div *ngFor="let hijo of rubro.hijos">
-        <ng-container *ngTemplateOutlet="rubroTemplate; context: {rubro: hijo, tipo: tipo}"></ng-container>
-      </div>
-    </div>
-  </div>
+  </tr>
+
+  <!-- HIJOS (Recursivo) -->
+  <ng-container *ngIf="rubro.expandido && rubro.hijos && rubro.hijos.length > 0">
+    <ng-container *ngFor="let hijo of rubro.hijos">
+      <ng-container *ngTemplateOutlet="filaModalRecursiva; context: {rubro: hijo, nivel: nivel + 1}"></ng-container>
+    </ng-container>
+  </ng-container>
+
 </ng-template>
