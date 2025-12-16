@@ -1,136 +1,60 @@
-/* Modal Perfil Styles */
-
+/* ⭐ DESACTIVAR MODO OSCURO DEL SISTEMA */
 :host {
-  display: block;
+  color-scheme: light !important;
 }
 
-/* Animaciones del modal */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
+/* Asegurar que el modal siempre sea blanco */
+:host ::ng-deep {
+  /* Forzar tema claro en todo el componente */
+  .modal-perfil {
+    color-scheme: light !important;
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Aplicar animación al modal */
-:host ::ng-deep .fixed.inset-0 {
-  animation: fadeIn 0.3s ease-out;
-}
-
-:host ::ng-deep .bg-white.rounded-2xl {
-  animation: slideIn 0.3s ease-out;
-}
-
-/* Scroll suave */
-:host ::ng-deep .max-h-\[90vh\] {
-  scroll-behavior: smooth;
-}
-
-/* Scrollbar personalizado */
-:host ::ng-deep .max-h-\[90vh\]::-webkit-scrollbar {
-  width: 8px;
-}
-
-:host ::ng-deep .max-h-\[90vh\]::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-:host ::ng-deep .max-h-\[90vh\]::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-:host ::ng-deep .max-h-\[90vh\]::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* Efectos hover en tarjetas */
-:host ::ng-deep .bg-gradient-to-br {
-  transition: all 0.3s ease;
-}
-
-:host ::ng-deep .bg-gradient-to-br:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Efectos en botones */
-:host ::ng-deep button {
-  transition: all 0.2s ease;
-}
-
-:host ::ng-deep button:active {
-  transform: scale(0.98);
-}
-
-/* Animación de carga */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-:host ::ng-deep .animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Inputs con focus */
-:host ::ng-deep input:focus {
-  animation: focusGlow 0.3s ease-out;
-}
-
-@keyframes focusGlow {
-  from {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
-  }
-  to {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-  }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  :host ::ng-deep .grid.grid-cols-4 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  :host ::ng-deep .grid.grid-cols-2 {
-    grid-template-columns: 1fr;
-  }
-
-  :host ::ng-deep .max-w-4xl {
-    margin: 1rem;
-  }
-}
-
-/* Soporte para tema oscuro (futuro) */
+/* Estilos específicos para contrarrestar dark mode */
 @media (prefers-color-scheme: dark) {
-  :host ::ng-deep .bg-white {
-    background-color: #1f2937;
-    color: #f3f4f6;
+  :host {
+    color-scheme: light !important;
   }
+  
+  /* Modal siempre blanco */
+  ::ng-deep .bg-white {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  /* Textos siempre oscuros */
+  ::ng-deep .text-gray-900 {
+    color: #111827 !important;
+  }
+  
+  ::ng-deep .text-gray-600 {
+    color: #4b5563 !important;
+  }
+  
+  ::ng-deep .text-gray-500 {
+    color: #6b7280 !important;
+  }
+  
+  /* Inputs blancos */
+  ::ng-deep input,
+  ::ng-deep input:focus {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #d1d5db !important;
+  }
+  
+  /* Bordes siempre grises claros */
+  ::ng-deep .border-gray-300 {
+    border-color: #d1d5db !important;
+  }
+  
+  ::ng-deep .border-gray-200 {
+    border-color: #e5e7eb !important;
+  }
+}
 
-  :host ::ng-deep .text-gray-900 {
-    color: #f3f4f6;
-  }
-
-  :host ::ng-deep .border-gray-200 {
-    border-color: #374151;
-  }
+/* Asegurar contraste en modo oscuro */
+::ng-deep .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5) !important;
 }

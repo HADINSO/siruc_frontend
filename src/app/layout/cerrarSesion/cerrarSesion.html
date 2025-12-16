@@ -1,0 +1,50 @@
+<!-- Modal Backdrop -->
+<div 
+  *ngIf="mostrar"
+  class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+  (click)="cancelarCierre()"
+>
+  <!-- Modal Container -->
+  <div 
+    class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 z-51 animate-slide-up"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Icono Superior Amarillo -->
+    <div class="flex justify-center mb-6">
+      <div class="bg-gradient-to-br from--300 to-  yellow-400 rounded-full p-6 shadow-lg transform hover:scale-110 transition-transform duration-300">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-800" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Titulo -->
+    <div class="text-center mb-8">
+      <h2 class="text-3xl font-bold text-gray-900 mb-2">¿Quieres cerrar sesion?</h2>
+      <p class="text-gray-600 text-sm">Perderás tu sesion actual. Podras volver a iniciar sesion cuando quieras.</p>
+    </div>
+
+    <!-- Botones -->
+    <div class="flex gap-4">
+      <!-- Boton No (Secundario) -->
+      <button
+        (click)="cancelarCierre()"
+        class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-900 font-semibold rounded-full transition-all duration-300 hover:border-gray-400 hover:bg-gray-50 active:scale-95"
+      >
+        No
+      </button>
+
+      <!-- Boton Si (Primario Amarillo) -->
+      <button
+        (click)="confirmarCierre()"
+        class="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 font-semibold rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:from-yellow-500 hover:to-yellow-600 active:scale-95"
+      >
+        Si
+      </button>
+    </div>
+    <!-- Footer opcional -->
+    <p class="text-center text-xs text-gray-500 mt-6">
+      Tu informacion sera guardada de forma segura
+    </p>
+  </div>
+</div>

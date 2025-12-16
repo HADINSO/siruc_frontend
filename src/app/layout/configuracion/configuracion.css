@@ -1,7 +1,9 @@
 /* Configuración Modal Styles */
 
+/* ⭐ DESACTIVAR MODO OSCURO - FORZAR MODO CLARO */
 :host {
   display: block;
+  color-scheme: light !important;
 }
 
 /* Animaciones del modal */
@@ -132,22 +134,78 @@
   }
 }
 
-/* Soporte para tema oscuro (futuro) */
+/* ⭐ ANULAR TEMA OSCURO - FORZAR MODO CLARO SIEMPRE */
 @media (prefers-color-scheme: dark) {
+  :host {
+    color-scheme: light !important;
+  }
+
+  /* Fondos siempre blancos */
   :host ::ng-deep .bg-white {
-    background-color: #1f2937;
-    color: #f3f4f6;
+    background-color: #ffffff !important;
+    color: #000000 !important;
   }
 
+  /* Textos siempre oscuros */
   :host ::ng-deep .text-gray-900 {
-    color: #f3f4f6;
+    color: #111827 !important;
   }
 
-  :host ::ng-deep .border-gray-200 {
-    border-color: #374151;
+  :host ::ng-deep .text-gray-700 {
+    color: #374151 !important;
   }
 
+  :host ::ng-deep .text-gray-600 {
+    color: #4b5563 !important;
+  }
+
+  :host ::ng-deep .text-gray-500 {
+    color: #6b7280 !important;
+  }
+
+  /* Fondos claros */
   :host ::ng-deep .bg-gray-50 {
-    background-color: #111827;
+    background-color: #f9fafb !important;
+    color: #000000 !important;
+  }
+
+  :host ::ng-deep .bg-gray-100 {
+    background-color: #f3f4f6 !important;
+    color: #000000 !important;
+  }
+
+  /* Bordes siempre grises claros */
+  :host ::ng-deep .border-gray-200 {
+    border-color: #e5e7eb !important;
+  }
+
+  :host ::ng-deep .border-gray-300 {
+    border-color: #d1d5db !important;
+  }
+
+  /* Inputs siempre blancos */
+  :host ::ng-deep input,
+  :host ::ng-deep select,
+  :host ::ng-deep textarea {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #d1d5db !important;
+  }
+
+  :host ::ng-deep input:focus,
+  :host ::ng-deep select:focus,
+  :host ::ng-deep textarea:focus {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #10b981 !important;
+  }
+
+  /* Scrollbar claro */
+  :host ::ng-deep .max-h-\[90vh\]::-webkit-scrollbar-track {
+    background: #f1f5f9 !important;
+  }
+
+  :host ::ng-deep .max-h-\[90vh\]::-webkit-scrollbar-thumb {
+    background: #cbd5e1 !important;
   }
 }
