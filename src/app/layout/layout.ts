@@ -1,12 +1,13 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';                    // ← NUEVA
+import { FormsModule } from '@angular/forms';
 import { LayoutService, MenuItem } from '../services/layout.service';
 import { Auth } from '../services/auth';
 import { HistorialService } from '../services/historial.service';
 import { ModalPerfil } from './modal-perfil/modal-perfil';  
-import { Configuracion } from './configuracion/configuracion';
+import { ConfiguracionComponent } from './configuracion/configuracion.component';
+import { CerrarSesionComponent } from './cerrarSesion/cerrarSesion';
 
 
 interface Notificacion {
@@ -26,9 +27,10 @@ interface Notificacion {
     RouterLink, 
     RouterLinkActive, 
     CommonModule,
-    FormsModule,        // ← AGREGAR
-    ModalPerfil,        // ← AGREGAR
-    Configuracion,
+    FormsModule,
+    ModalPerfil,
+    ConfiguracionComponent,
+    CerrarSesionComponent,  // ← NUEVO
   ],
   templateUrl: './layout.html',
   styleUrl: './layout.css',
@@ -48,8 +50,8 @@ export class Layout implements OnInit {
   mostrarNotificaciones = false;
   mostrarModalPerfil = false;
   mostrarConfiguracion = false; 
+  mostrarModalCerrarSesion = false; // ← NUEVO
   cargandoMenu = true;
-  mostrarModalLogout = false;
 
   notificaciones: Notificacion[] = [
     {
@@ -195,7 +197,7 @@ export class Layout implements OnInit {
       return;
     }
 
-    console.log('📋 Cargando menú para persona_id:', personaId);
+    console.log('📋 Cargando menu para persona_id:', personaId);
 
     this.layoutService.getMenuItems(personaId).subscribe({
       next: (items) => {
@@ -210,15 +212,15 @@ export class Layout implements OnInit {
             orden: 0
           };
           this.menuItems = [dashboard, ...items];
-          console.log('📋 Menú final construido:', this.menuItems);
+          console.log('📋 Menu final construido:', this.menuItems);
         } else {
-          console.warn('⚠️ No se recibieron elementos del menú');
+          console.warn('⚠️ No se recibieron elementos del menu');
           this.menuItems = [];
         }
         this.cargandoMenu = false;
       },
       error: (error) => {
-        console.error('❌ Error al cargar el menú en el componente:', error);
+        console.error('❌ Error al cargar el menu en el componente:', error);
         this.menuItems = [];
         this.cargandoMenu = false;
       }
@@ -242,8 +244,6 @@ export class Layout implements OnInit {
     this.mostrarModalPerfil = false;
   }
 
-
-
   guardarPerfil(datosActualizados: any): void {
     this.usuario.nombre = datosActualizados.nombre;
     this.usuario.email = datosActualizados.email;
@@ -251,9 +251,10 @@ export class Layout implements OnInit {
     this.usuario.iniciales = this.obtenerIniciales(datosActualizados.nombre);
     console.log('✅ Perfil actualizado:', this.usuario);
   }
+
   abrirConfiguracion(): void {
-  this.mostrarConfiguracion = true;
-  this.mostrarDropdown = false;
+    this.mostrarConfiguracion = true;
+    this.mostrarDropdown = false;
   }
 
   cerrarConfiguracion(): void {
@@ -261,8 +262,9 @@ export class Layout implements OnInit {
   }
 
   guardarConfiguracion(configActualizada: any): void {
-    console.log('✅ Configuración actualizada:', configActualizada);
+    console.log('✅ Configuracion actualizada:', configActualizada);
   }
+
   toggleDropdown(): void {
     this.mostrarDropdown = !this.mostrarDropdown;
     if (this.mostrarDropdown) {
@@ -333,29 +335,33 @@ export class Layout implements OnInit {
     if (minutos < 1) return 'Ahora mismo';
     if (minutos < 60) return `Hace ${minutos} minuto${minutos > 1 ? 's' : ''}`;
     if (horas < 24) return `Hace ${horas} hora${horas > 1 ? 's' : ''}`;
-    return `Hace ${dias} día${dias > 1 ? 's' : ''}`;
+    return `Hace ${dias} dia${dias > 1 ? 's' : ''}`;
   }
 
   /**
-   * ✅ NUEVO: Método para cerrar sesión
-   * - Limpia el localStorage
-   * - Navega al login
-   * - Recarga la página
+   * ✅ Metodo para abrir el modal de cerrar sesion
    */
   cerrarSesion(): void {
-    console.log('🚪 Mostrando modal de cierre de sesión...');
-    this.mostrarModalLogout = true;
+    console.log('🚪 Mostrando modal de cierre de sesion...');
+    this.mostrarModalCerrarSesion = true;
     this.mostrarDropdown = false;
   }
 
-  cerrarModalLogout(): void {
-    this.mostrarModalLogout = false;
-  }
-
-  confirmarLogout(): void {
-    console.log('✅ Confirmando cierre de sesión...');
-    this.mostrarModalLogout = false;
+  /**
+   * ✅ Metodo para confirmar el cierre de sesion
+   */
+  confirmarCierreSesion(): void {
+    console.log('✅ Confirmando cierre de sesion...');
+    this.mostrarModalCerrarSesion = false;
     this.historialService.limpiarHistorial();
     this.authService.logout();
+  }
+
+  /**
+   * ✅ Metodo para cancelar el cierre de sesion
+   */
+  cancelarCierreSesion(): void {
+    console.log('❌ Cierre de sesion cancelado');
+    this.mostrarModalCerrarSesion = false;
   }
 }
