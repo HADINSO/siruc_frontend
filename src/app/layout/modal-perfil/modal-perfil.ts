@@ -2,7 +2,34 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Auth } from '../../services/auth';
-import { UsuarioService, DatosAPI } from '../../services/usuario.service';
+import { UsuariosService } from '../../services/usuarios.service';
+
+// Interfaz para los datos de la API
+interface DatosAPI {
+  persona: {
+    nombre: string;
+    apellido: string;
+    correo: string;
+    createdAt: string;
+    elemento_personas: Array<{
+      estado: boolean;
+      elemento: {
+        nombre: string;
+      };
+    }>;
+    permiso_personas: Array<{
+      permiso: {
+        nombre: string;
+        codigo: string;
+      };
+    }>;
+  };
+  username: string;
+  rol: {
+    id: number;
+    nombre: string;
+  };
+}
 
 interface UsuarioDetallado {
   nombre: string;
@@ -54,7 +81,7 @@ export class ModalPerfil implements OnInit {
 
   constructor(
     private authService: Auth,
-    private usuarioService: UsuarioService
+    private usuariosService: UsuariosService
   ) {}
 
   ngOnInit(): void {
@@ -67,13 +94,12 @@ export class ModalPerfil implements OnInit {
   cargarDatos(): void {
     this.cargando = true;
     this.error = '';
-
-    this.usuarioService.obtenerPerfilActual().subscribe({
+    this.usuariosService.getOptenerPerfilActual().subscribe({
       next: (datos: DatosAPI) => {
         this.procesarDatosAPI(datos);
         this.cargando = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error al cargar perfil:', err);
         this.error = 'Error al cargar los datos del perfil';
         this.cargando = false;
@@ -100,14 +126,14 @@ export class ModalPerfil implements OnInit {
 
     // Procesar elementos/permisos desde elemento_personas
     this.usuario.elementos = datos.persona.elemento_personas
-      .filter(ep => ep.estado) // Solo elementos activos
-      .map(ep => ({
+      .filter((ep: any) => ep.estado) // Solo elementos activos
+      .map((ep: any) => ({
         nombre: ep.elemento.nombre.trim(),
         icono: this.getIconoElemento(ep.elemento.nombre)
       }));
 
     // Procesar permisos desde permiso_personas
-    this.usuario.permisos = datos.persona.permiso_personas.map(pp => ({
+    this.usuario.permisos = datos.persona.permiso_personas.map((pp: any) => ({
       nombre: pp.permiso.nombre,
       descripcion: `Código: ${pp.permiso.codigo}`,
       icono: this.getIconoPermiso(pp.permiso.nombre)
@@ -116,11 +142,11 @@ export class ModalPerfil implements OnInit {
     // Estadísticas (calculadas)
     this.usuario.estadisticas = {
       rubros: datos.persona.elemento_personas.filter(
-        ep => ep.elemento.nombre.toLowerCase().includes('rubro')
+        (ep: any) => ep.elemento.nombre.toLowerCase().includes('rubro')
       ).length,
       movimientos: 0, // No viene en la API
       asignaciones: datos.persona.elemento_personas.filter(
-        ep => ep.elemento.nombre.toLowerCase().includes('asignacion')
+        (ep: any) => ep.elemento.nombre.toLowerCase().includes('asignacion')
       ).length,
       aprobacion: 100 // Valor por defecto
     };

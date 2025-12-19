@@ -1,0 +1,212 @@
+<!-- Backdrop -->
+<div 
+  *ngIf="mostrar" 
+  class="modal-backdrop" 
+  (click)="onCancelar()"
+>
+  <!-- Modal -->
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <h2>{{ esEdicion ? 'Editar Usuario' : 'Crear Nuevo Usuario' }}</h2>
+      <button class="btn-close" (click)="onCancelar()" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Contenido -->
+    <div class="modal-body">
+      <form [formGroup]="formulario" (ngSubmit)="onGuardar()">
+        
+        <!-- Fila 1: Nombre y Apellido -->
+        <div class="form-row">
+          <!-- Nombre -->
+          <div class="form-group">
+            <label for="nombre">Nombre *</label>
+            <input 
+              type="text" 
+              id="nombre"
+              formControlName="nombre"
+              placeholder="Ej: Juan"
+              [class.input-error]="tieneError('nombre')"
+            />
+            <span class="error-message" *ngIf="tieneError('nombre')">
+              {{ getErrorMessage('nombre') }}
+            </span>
+          </div>
+
+          <!-- Apellido -->
+          <div class="form-group">
+            <label for="apellido">Apellido *</label>
+            <input 
+              type="text" 
+              id="apellido"
+              formControlName="apellido"
+              placeholder="Ej: Pérez"
+              [class.input-error]="tieneError('apellido')"
+            />
+            <span class="error-message" *ngIf="tieneError('apellido')">
+              {{ getErrorMessage('apellido') }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Fila 2: Email y Username -->
+        <div class="form-row">
+          <!-- Email -->
+          <div class="form-group">
+            <label for="correo">Correo Electrónico *</label>
+            <input 
+              type="email" 
+              id="correo"
+              formControlName="correo"
+              placeholder="Ej: juan@example.com"
+              [class.input-error]="tieneError('correo')"
+            />
+            <span class="error-message" *ngIf="tieneError('correo')">
+              {{ getErrorMessage('correo') }}
+            </span>
+          </div>
+
+          <!-- Username -->
+          <div class="form-group">
+            <label for="username">Nombre de Usuario *</label>
+            <input 
+              type="text" 
+              id="username"
+              formControlName="username"
+              placeholder="Ej: juanp"
+              [class.input-error]="tieneError('username')"
+            />
+            <span class="error-message" *ngIf="tieneError('username')">
+              {{ getErrorMessage('username') }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Fila 3: Contraseña -->
+        <div class="form-row">
+          <!-- Password -->
+          <div class="form-group">
+            <label for="password">{{ esEdicion ? 'Contraseña (dejar vacío para no cambiar)' : 'Contraseña' }} *</label>
+            <div class="password-input-wrapper">
+              <input 
+                [type]="mostrarPassword ? 'text' : 'password'" 
+                id="password"
+                formControlName="password"
+                placeholder="Ej: 123456"
+                [class.input-error]="tieneError('password')"
+              />
+              <button 
+                type="button" 
+                class="btn-toggle-password"
+                (click)="toggleMostrarPassword()"
+                tabindex="-1"
+              >
+                <svg *ngIf="!mostrarPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <svg *ngIf="mostrarPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-4.753 4.753m4.753-4.753L3.596 3.596m16.807 16.807L6.404 6.404m0 0A3.375 3.375 0 005.396 9.25c0 .625.195 1.205.586 1.695m0 0a3.375 3.375 0 007.07 0" />
+                </svg>
+              </button>
+            </div>
+            <span class="error-message" *ngIf="tieneError('password')">
+              {{ getErrorMessage('password') }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Fila 4: Rol -->
+        <div class="form-row">
+          <!-- Rol -->
+          <div class="form-group">
+            <label for="rol_id">Rol *</label>
+            <select 
+              id="rol_id"
+              formControlName="rol_id"
+              [class.input-error]="tieneError('rol_id')"
+            >
+              <option value="">Selecciona un rol</option>
+              <option *ngFor="let rol of roles" [value]="rol.id">
+                {{ rol.nombre }}
+              </option>
+            </select>
+            <span class="error-message" *ngIf="tieneError('rol_id')">
+              {{ getErrorMessage('rol_id') }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Fila 5: Permisos -->
+        <div class="form-group">
+          <label>Permisos *</label>
+          <div class="checkbox-group">
+            <div *ngFor="let permiso of permisos" class="checkbox-item">
+              <input 
+                type="checkbox"
+                [id]="'permiso-' + permiso.id"
+                [checked]="getPermisosSeleccionados().includes(permiso.id)"
+                (change)="togglePermiso(permiso.id)"
+              />
+              <label [for]="'permiso-' + permiso.id">{{ permiso.nombre }}</label>
+            </div>
+          </div>
+          <span class="error-message" *ngIf="tieneError('permisos')">
+            Selecciona al menos un permiso
+          </span>
+        </div>
+
+        <!-- Fila 6: Elementos -->
+        <div class="form-group">
+          <label>Elementos *</label>
+          <div class="checkbox-group">
+            <div *ngFor="let elemento of elementos" class="checkbox-item">
+              <input 
+                type="checkbox"
+                [id]="'elemento-' + elemento.id"
+                [checked]="getElementosSeleccionados().includes(elemento.id)"
+                (change)="toggleElemento(elemento.id)"
+              />
+              <label [for]="'elemento-' + elemento.id">{{ elemento.nombre }}</label>
+            </div>
+          </div>
+          <span class="error-message" *ngIf="tieneError('elementos')">
+            Selecciona al menos un elemento
+          </span>
+        </div>
+
+        <!-- Botones -->
+        <div class="modal-footer">
+          <button 
+            type="button" 
+            class="btn btn-secondary"
+            (click)="onCancelar()"
+            [disabled]="cargando"
+          >
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="cargando"
+          >
+            <span *ngIf="!cargando">
+              {{ esEdicion ? 'Actualizar' : 'Crear Usuario' }}
+            </span>
+            <span *ngIf="cargando" class="flex items-center gap-2">
+              <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Guardando...
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

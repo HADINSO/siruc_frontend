@@ -56,7 +56,7 @@ export const routes: Routes = [
       },
       {
         path: 'administracion',
-        loadComponent: () => import('./pages/administracion/administracion').then(m => m.Administracion)
+        loadComponent: () => import('./pages/administracion/administracion').then(m => m.AdministracionComponent)
       },
       {
         path: '**',

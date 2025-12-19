@@ -78,14 +78,9 @@ export class UsuariosService {
    * Obtiene el perfil del usuario actual autenticado
    * IMPORTANTE: El backend debe retornar la estructura DatosAPI
    */
-  obtenerPerfilActual(): Observable<any> {
-    // TODO: Reemplaza con la URL correcta del tu backend
-    // Esta URL debe retornar los datos del usuario actual con estructura:
-    // {
-    //   persona: { nombre, apellido, correo, createdAt, elemento_personas[], permiso_personas[] },
-    //   username,
-    //   rol: { id, nombre }
-    // }
-    return this.http.get<any>('http://localhost:4000/api/usuarios/perfil');
+
+
+  getOptenerPerfilActual():Observable<any> { 
+    return this.http.get<any[]>('http://localhost:4000/api/elementos/todos');
   }
 }

@@ -1,389 +1,90 @@
-<div class="space-y-6">
-  <!-- Header -->
-  <div class="flex items-center justify-between">
-    <div>
-      <h1 class="text-2xl font-bold text-[#2D6A4F]">Administración de Usuarios</h1>
-      <p class="text-slate-500 text-sm mt-1">Gestión de usuarios, roles y permisos del sistema</p>
+<div class="administracion-usuarios-container">
+  <!-- Notificación -->
+  <div 
+    *ngIf="mostrarNotificacion" 
+    class="notification"
+    [ngClass]="'notification-' + tipoMensaje"
+  >
+    <div class="notification-content">
+      <span>{{ mensaje }}</span>
+      <button class="notification-close" (click)="cerrarNotificacion()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
-    <button onclick="document.getElementById('modalNuevoUsuario').classList.remove('hidden')"
-      class="flex items-center gap-2 px-4 py-2.5 bg-[#40916C] text-white rounded-lg hover:bg-[#2D6A4F] transition-colors shadow-sm">
-      <span class="text-lg">+</span>
-      <span class="font-medium">Nuevo Usuario</span>
+  </div>
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Administracion de Usuarios</h1>
+      <p>Gestion de usuarios, roles y permisos del sistema</p>
+    </div>
+    <button class="btn-nuevo-usuario" (click)="abrirModalCrear()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+      Nuevo Usuario
     </button>
   </div>
 
-  <!-- Statistics Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-    <!-- Total Usuarios -->
-    <div class="bg-gradient-to-br from-[#52B788] to-[#40916C] rounded-xl p-6 text-white shadow-lg">
-      <div class="flex items-center gap-4">
-        <div class="bg-white/20 p-3 rounded-lg">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
-            </path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-sm opacity-90">Total Usuarios</p>
-          <p class="text-3xl font-bold">5</p>
-        </div>
-      </div>
+  <!-- Estadísticas -->
+  <div class="estadisticas-grid">
+    <app-stat-card 
+      *ngFor="let card of estadisticasCards"
+      [data]="card"
+    ></app-stat-card>
+  </div>
+
+  <!-- Grid de Usuarios -->
+  <div class="usuarios-section">
+    <!-- Cargando -->
+    <div *ngIf="cargandoUsuarios" class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando usuarios...</p>
     </div>
 
-    <!-- Usuarios Activos -->
-    <div class="bg-white rounded-xl p-6 shadow-md border border-slate-200">
-      <div class="flex items-center gap-4">
-        <div class="bg-[#D8F3DC] p-3 rounded-lg">
-          <svg class="w-6 h-6 text-[#2D6A4F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z">
-            </path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-sm text-slate-600">Financiera</p>
-          <p class="text-3xl font-bold text-[#2D6A4F]">4</p>
-        </div>
-      </div>
+    <!-- Sin usuarios -->
+    <div *ngIf="!cargandoUsuarios && usuarios.length === 0" class="empty-state">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+      <h3>No hay usuarios</h3>
+      <p>Crea el primer usuario haciendo clic en "Nuevo Usuario"</p>
+      <button class="btn-crear-primero" (click)="abrirModalCrear()">
+        Crear Primer Usuario
+      </button>
     </div>
 
-    <!-- Administradores -->
-    <div class="bg-white rounded-xl p-6 shadow-md border border-slate-200">
-      <div class="flex items-center gap-4">
-        <div class="bg-[#FEF3C7] p-3 rounded-lg">
-          <svg class="w-6 h-6 text-[#D97706]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
-            </path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-sm text-slate-600">Administradores</p>
-          <p class="text-3xl font-bold text-[#D97706]">1</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Inactivos -->
-    <div class="bg-white rounded-xl p-6 shadow-md border border-slate-200">
-      <div class="flex items-center gap-4">
-        <div class="bg-[#FEE2E2] p-3 rounded-lg">
-          <svg class="w-6 h-6 text-[#DC2626]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-sm text-slate-600">Inactivos</p>
-          <p class="text-3xl font-bold text-[#DC2626]">1</p>
-        </div>
-      </div>
+    <!-- Grid de usuarios -->
+    <div *ngIf="!cargandoUsuarios && usuarios.length > 0" class="usuarios-grid">
+      <app-user-card 
+        *ngFor="let usuario of usuarios"
+        [usuario]="usuario"
+        (editar)="abrirModalEditar($event)"
+        (eliminar)="abrirDeleteConfirmation($event)"
+      ></app-user-card>
     </div>
   </div>
 
-  <!-- User Cards Grid -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-    <!-- User Card 1 - María García Pérez -->
-    <div class="bg-white rounded-xl p-6 shadow-md border border-slate-200 hover:shadow-lg transition-shadow">
-      <div class="flex items-start justify-between">
-        <div class="flex items-start gap-4 flex-1">
-          <!-- Avatar -->
-          <div
-            class="bg-[#52B788] text-white w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0">
-            MG
-          </div>
+  <!-- Modal Crear/Editar Usuario -->
+  <app-user-modal
+    [mostrar]="mostrarModal"
+    [usuarioEditar]="usuarioEnEdicion"
+    [roles]="roles"
+    [permisos]="permisos"
+    [elementos]="elementos"
+    (guardar)="onGuardarUsuario($event)"
+    (cancelar)="onCancelarModal()"
+  ></app-user-modal>
 
-          <!-- User Info -->
-          <div class="flex-1 min-w-0">
-            <h3 class="font-semibold text-[#1B4332] text-lg">María García Pérez</h3>
-            <p class="text-slate-600 text-sm truncate">maria.garcia@universidad.edu</p>
-
-            <!-- Role and Department -->
-            <div class="flex items-center gap-2 mt-2 flex-wrap">
-              <span
-                class="inline-flex items-center gap-1 px-3 py-1 bg-[#1B4332] text-white text-xs rounded-full font-medium">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z">
-                  </path>
-                </svg>
-                Administrador
-              </span>
-              <span class="text-slate-600 text-xs">• Administración Central</span>
-            </div>
-
-            <!-- Last Access -->
-            <p class="text-slate-500 text-xs mt-3">Último acceso: 29/01/2025</p>
-          </div>
-        </div>
-
-        <!-- Status and Actions -->
-        <div class="flex flex-col items-end gap-3 ml-4">
-          <span class="px-3 py-1 bg-[#D8F3DC] text-[#2D6A4F] text-xs rounded-full font-medium border border-[#95D5B2]">
-            Activo
-          </span>
-
-          <div class="flex items-center gap-2">
-            <button class="text-[#40916C] hover:text-[#2D6A4F] transition-colors p-1">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                </path>
-              </svg>
-            </button>
-            <button class="text-[#DC2626] hover:text-[#B91C1C] transition-colors p-1">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                </path>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- User Card 2 - Carlos Ruiz Sánchez -->
-    <div class="bg-white rounded-xl p-6 shadow-md border border-slate-200 hover:shadow-lg transition-shadow">
-      <div class="flex items-start justify-between">
-        <div class="flex items-start gap-4 flex-1">
-          <!-- Avatar -->
-          <div
-            class="bg-[#40916C] text-white w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0">
-            CR
-          </div>
-
-          <!-- User Info -->
-          <div class="flex-1 min-w-0">
-            <h3 class="font-semibold text-[#1B4332] text-lg">Carlos Ruiz Sánchez</h3>
-            <p class="text-slate-600 text-sm truncate">carlos.ruiz@universidad.edu</p>
-
-            <!-- Role and Department -->
-            <div class="flex items-center gap-2 mt-2 flex-wrap">
-              <span
-                class="inline-flex items-center gap-1 px-3 py-1 bg-[#52B788] text-white text-xs rounded-full font-medium">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z">
-                  </path>
-                </svg>
-                Coordinador
-              </span>
-              <span class="text-slate-600 text-xs">• Facultad de Ingeniería</span>
-            </div>
-
-            <!-- Last Access -->
-            <p class="text-slate-500 text-xs mt-3">Último acceso: 19/01/2025</p>
-          </div>
-        </div>
-
-        <!-- Status and Actions -->
-        <div class="flex flex-col items-end gap-3 ml-4">
-          <span class="px-3 py-1 bg-[#D8F3DC] text-[#2D6A4F] text-xs rounded-full font-medium border border-[#95D5B2]">
-            Activo
-          </span>
-
-          <div class="flex items-center gap-2">
-            <button class="text-[#40916C] hover:text-[#2D6A4F] transition-colors p-1">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                </path>
-              </svg>
-            </button>
-            <button class="text-[#DC2626] hover:text-[#B91C1C] transition-colors p-1">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                </path>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- User Card 3 - Ana López Torres -->
-    <div class="bg-white rounded-xl p-6 shadow-md border border-slate-200 hover:shadow-lg transition-shadow">
-      <div class="flex items-start justify-between">
-        <div class="flex items-start gap-4 flex-1">
-          <!-- Avatar -->
-          <div
-            class="bg-[#2D6A4F] text-white w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0">
-            AL
-          </div>
-
-          <!-- User Info -->
-          <div class="flex-1 min-w-0">
-            <h3 class="font-semibold text-[#1B4332] text-lg">Ana López Torres</h3>
-            <p class="text-slate-600 text-sm truncate">ana.lopez@universidad.edu</p>
-
-            <!-- Role and Department -->
-            <div class="flex items-center gap-2 mt-2 flex-wrap">
-              <span
-                class="inline-flex items-center gap-1 px-3 py-1 bg-[#52B788] text-white text-xs rounded-full font-medium">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z">
-                  </path>
-                </svg>
-                Coordinador
-              </span>
-              <span class="text-slate-600 text-xs">• Facultad de Medicina</span>
-            </div>
-
-            <!-- Last Access -->
-            <p class="text-slate-500 text-xs mt-3">Último acceso: 18/01/2025</p>
-          </div>
-        </div>
-
-        <!-- Status and Actions -->
-        <div class="flex flex-col items-end gap-3 ml-4">
-          <span class="px-3 py-1 bg-[#D8F3DC] text-[#2D6A4F] text-xs rounded-full font-medium border border-[#95D5B2]">
-            Activo
-          </span>
-
-          <div class="flex items-center gap-2">
-            <button class="text-[#40916C] hover:text-[#2D6A4F] transition-colors p-1">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                </path>
-              </svg>
-            </button>
-            <button class="text-[#DC2626] hover:text-[#B91C1C] transition-colors p-1">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                </path>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- User Card 4 - Pedro Martínez Luna -->
-    <div class="bg-white rounded-xl p-6 shadow-md border border-slate-200 hover:shadow-lg transition-shadow">
-      <div class="flex items-start justify-between">
-        <div class="flex items-start gap-4 flex-1">
-          <!-- Avatar -->
-          <div
-            class="bg-[#74C69D] text-white w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0">
-            PM
-          </div>
-
-          <!-- User Info -->
-          <div class="flex-1 min-w-0">
-            <h3 class="font-semibold text-[#1B4332] text-lg">Pedro Martínez Luna</h3>
-            <p class="text-slate-600 text-sm truncate">pedro.martinez@universidad.edu</p>
-
-            <!-- Role and Department -->
-            <div class="flex items-center gap-2 mt-2 flex-wrap">
-              <span
-                class="inline-flex items-center gap-1 px-3 py-1 bg-[#95D5B2] text-[#1B4332] text-xs rounded-full font-medium">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z">
-                  </path>
-                </svg>
-                Consultor
-              </span>
-              <span class="text-slate-600 text-xs">• Biblioteca Central</span>
-            </div>
-
-            <!-- Last Access -->
-            <p class="text-slate-500 text-xs mt-3">Último acceso: 15/01/2025</p>
-          </div>
-        </div>
-
-        <!-- Status and Actions -->
-        <div class="flex flex-col items-end gap-3 ml-4">
-          <span class="px-3 py-1 bg-[#D8F3DC] text-[#2D6A4F] text-xs rounded-full font-medium border border-[#95D5B2]">
-            Activo
-          </span>
-
-          <div class="flex items-center gap-2">
-            <button class="text-[#40916C] hover:text-[#2D6A4F] transition-colors p-1">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                </path>
-              </svg>
-            </button>
-            <button class="text-[#DC2626] hover:text-[#B91C1C] transition-colors p-1">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                </path>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Crear Nuevo Usuario -->
-  <div id="modalNuevoUsuario"
-    class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all">
-      <!-- Modal Header -->
-      <div class="flex items-start justify-between p-6 border-b border-slate-200">
-        <div>
-          <h2 class="text-xl font-bold text-[#2D6A4F]">Crear Nuevo Usuario</h2>
-          <p class="text-sm text-slate-500 mt-1">Complete la información del nuevo usuario del sistema</p>
-        </div>
-        <button onclick="document.getElementById('modalNuevoUsuario').classList.add('hidden')"
-          class="text-slate-400 hover:text-slate-600 transition-colors">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Modal Body -->
-      <div class="p-6 space-y-5">
-        <!-- Nombre Completo -->
-        <div>
-          <label class="block text-sm font-medium text-[#2D6A4F] mb-2">Nombre Completo</label>
-          <input type="text" placeholder="Nombre y apellidos"
-            class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#52B788] focus:border-transparent outline-none transition-all text-slate-700 placeholder:text-slate-400">
-        </div>
-
-        <!-- Correo Electrónico -->
-        <div>
-          <label class="block text-sm font-medium text-[#2D6A4F] mb-2">Correo Electrónico</label>
-          <input type="email" placeholder="usuario@universidad.edu"
-            class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#52B788] focus:border-transparent outline-none transition-all text-slate-700 placeholder:text-slate-400">
-        </div>
-
-        <!-- Rol -->
-        <div>
-          <label class="block text-sm font-medium text-[#2D6A4F] mb-2">Rol</label>
-          <select
-            class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#52B788] focus:border-transparent outline-none transition-all text-slate-700 bg-white">
-            <option value="" disabled selected>Seleccione rol</option>
-            <option value="Administrador">Administrador</option>
-            <option value="Financiera">Financiera</option>
-          </select>
-        </div>
-
-      </div>
-
-      <!-- Modal Footer -->
-      <div class="flex items-center justify-end gap-3 p-6 border-t border-slate-200">
-        <button onclick="document.getElementById('modalNuevoUsuario').classList.add('hidden')"
-          class="px-5 py-2.5 text-slate-600 hover:text-slate-800 font-medium transition-colors">
-          Cancelar
-        </button>
-        <button
-          onclick="alert('Usuario creado (funcionalidad pendiente)'); document.getElementById('modalNuevoUsuario').classList.add('hidden')"
-          class="px-5 py-2.5 bg-[#40916C] text-white rounded-lg hover:bg-[#2D6A4F] transition-colors shadow-sm font-medium">
-          Crear Usuario
-        </button>
-      </div>
-    </div>
-  </div>
+  <!-- Modal Confirmar Eliminación -->
+  <app-delete-confirmation
+    [mostrar]="mostrarDeleteConfirmation"
+    [nombreUsuario]="usuarioAEliminar?.nombre || ''"
+    [cargando]="cargandoOperacion"
+    (confirmar)="onConfirmarEliminar()"
+    (cancelar)="onCancelarDelete()"
+  ></app-delete-confirmation>
 </div>
