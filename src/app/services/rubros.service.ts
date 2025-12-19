@@ -44,6 +44,39 @@ export interface RubroTerciario {
   updatedAt?: string;
 }
 
+export interface RubroCuaternario {
+  id?: number;
+  nombre: string;
+  cuenta: string;
+  rublo_terciario_id: number;
+  periodo_fiscal_id: number;
+  codigo?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface RubroQuinario {
+  id?: number;
+  nombre: string;
+  cuenta: string;
+  rublo_cuaternario_id: number;
+  periodo_fiscal_id: number;
+  codigo?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface RubroSenario {
+  id?: number;
+  nombre: string;
+  cuenta: string;
+  rublo_quinario_id: number;
+  periodo_fiscal_id: number;
+  codigo?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface DetallePrincipal {
   id?: number;
   descripcion: string;
@@ -73,13 +106,20 @@ export class RubrosService {
   private apiUrlPrincipales = '/api/rublos-principales';
   private apiUrlSecundarios = '/api/rublos-secundarios';
   private apiUrlTerciarios = '/api/rublos-terciarios';
+  private apiUrlCuaternarios = '/api/rublo-cuaternarios';
+  private apiUrlQuinarios = '/api/rublo-quinarios';
+  private apiUrlSenarios = '/api/rublo-senarios';
   private apiUrlDetalles = '/api/detalles-rubros';
 
   constructor(private http: HttpClient) {}
 
+  // ==================== PERIODOS ====================
+
   getPeriodos(): Observable<Periodo[]> {
     return this.http.get<Periodo[]>(this.apiUrlPeriodos);
   }
+
+  // ==================== PRINCIPALES ====================
 
   getAllRubrosPrincipales(): Observable<RubroPrincipal[]> {
     return this.http.get<RubroPrincipal[]>(this.apiUrlPrincipales);
@@ -101,6 +141,8 @@ export class RubrosService {
     return this.http.delete<void>(`${this.apiUrlPrincipales}/${id}`);
   }
 
+  // ==================== SECUNDARIOS ====================
+
   getRubrosSecundariosByPrincipal(principalId: number): Observable<RubroSecundario[]> {
     return this.http.get<RubroSecundario[]>(this.apiUrlSecundarios);
   }
@@ -117,6 +159,8 @@ export class RubrosService {
     return this.http.delete<void>(`${this.apiUrlSecundarios}/${id}`);
   }
 
+  // ==================== TERCIARIOS ====================
+
   getRubrosTerciariosBySecundario(secundarioId: number): Observable<RubroTerciario[]> {
     return this.http.get<RubroTerciario[]>(this.apiUrlTerciarios);
   }
@@ -132,6 +176,62 @@ export class RubrosService {
   deleteRubroTerciario(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrlTerciarios}/${id}`);
   }
+
+  // ==================== CUATERNARIOS ====================
+
+  getRubrosCuaternariosByTerciario(terciarioId: number): Observable<RubroCuaternario[]> {
+    return this.http.get<RubroCuaternario[]>(this.apiUrlCuaternarios);
+  }
+
+  createRubroCuaternario(data: any): Observable<RubroCuaternario> {
+    return this.http.post<RubroCuaternario>(this.apiUrlCuaternarios, data);
+  }
+
+  updateRubroCuaternario(id: number, data: Partial<RubroCuaternario>): Observable<RubroCuaternario> {
+    return this.http.put<RubroCuaternario>(`${this.apiUrlCuaternarios}/${id}`, data);
+  }
+
+  deleteRubroCuaternario(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrlCuaternarios}/${id}`);
+  }
+
+  // ==================== QUINARIOS ====================
+
+  getRubrosQuinariosByCuaternario(cuaternarioId: number): Observable<RubroQuinario[]> {
+    return this.http.get<RubroQuinario[]>(this.apiUrlQuinarios);
+  }
+
+  createRubroQuinario(data: any): Observable<RubroQuinario> {
+    return this.http.post<RubroQuinario>(this.apiUrlQuinarios, data);
+  }
+
+  updateRubroQuinario(id: number, data: Partial<RubroQuinario>): Observable<RubroQuinario> {
+    return this.http.put<RubroQuinario>(`${this.apiUrlQuinarios}/${id}`, data);
+  }
+
+  deleteRubroQuinario(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrlQuinarios}/${id}`);
+  }
+
+  // ==================== SENARIOS ====================
+
+  getRubrosSenariosByQuinario(quinarioId: number): Observable<RubroSenario[]> {
+    return this.http.get<RubroSenario[]>(this.apiUrlSenarios);
+  }
+
+  createRubroSenario(data: any): Observable<RubroSenario> {
+    return this.http.post<RubroSenario>(this.apiUrlSenarios, data);
+  }
+
+  updateRubroSenario(id: number, data: Partial<RubroSenario>): Observable<RubroSenario> {
+    return this.http.put<RubroSenario>(`${this.apiUrlSenarios}/${id}`, data);
+  }
+
+  deleteRubroSenario(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrlSenarios}/${id}`);
+  }
+
+  // ==================== DETALLES ====================
 
   createDetallePrincipal(data: DetallePrincipal): Observable<DetallePrincipal> {
     return this.http.post<DetallePrincipal>(`${this.apiUrlDetalles}/principal`, data);

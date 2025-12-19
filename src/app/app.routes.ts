@@ -42,6 +42,18 @@ export const routes: Routes = [
         path: 'rubros-terciarios',
         loadComponent: () => import('./pages/rubros-terciaro/rubros-terciaro').then(m => m.RubrosTerciarios)
       },
+      /* {
+        path: 'rubros-cuaternarios',
+        loadComponent: () => import('./pages/rubros-cuaternarios/rubros-cuaternarios').then(m => m.RubrosCuaternariosComponent)
+      },
+      {
+        path: 'rubros-quinarios',
+        loadComponent: () => import('./pages/rubros-quinarios/rubros-quinarios').then(m => m.RubrosQuinariosComponent)
+      },
+      {
+        path: 'rubros-senarios',
+        loadComponent: () => import('./pages/rubros-senarios/rubros-senarios').then(m => m.RubrosSenarioComponent)
+      }, */
       {
         path: 'propiedades',
         loadComponent: () => import('./pages/propiedades/propiedades').then(m => m.Propiedades)

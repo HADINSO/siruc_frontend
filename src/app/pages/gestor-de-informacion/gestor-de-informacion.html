@@ -605,9 +605,12 @@
               [ngClass]="{
                 'bg-blue-200 text-blue-700': rubro.tipo === 'principal',
                 'bg-green-200 text-green-700': rubro.tipo === 'secundario',
-                'bg-purple-200 text-purple-700': rubro.tipo === 'terciario'
+                'bg-purple-200 text-purple-700': rubro.tipo === 'terciario',
+                'bg-yellow-200 text-yellow-700': rubro.tipo === 'cuaternario',
+                'bg-pink-200 text-pink-700': rubro.tipo === 'quinario',
+                'bg-cyan-200 text-cyan-700': rubro.tipo === 'senario'
               }">
-          {{ rubro.tipo === 'principal' ? 'P' : rubro.tipo === 'secundario' ? 'S' : 'T' }}
+          {{ rubro.tipo === 'principal' ? 'P' : rubro.tipo === 'secundario' ? 'S' : rubro.tipo === 'terciario' ? 'T' : rubro.tipo === 'cuaternario' ? 'C' : rubro.tipo === 'quinario' ? 'Q' : 'Se' }}
         </span>
 
         <span class="font-semibold text-slate-800 text-sm">{{ rubro.nombre }}</span>

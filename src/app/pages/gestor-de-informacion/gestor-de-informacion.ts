@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { 
@@ -11,10 +11,13 @@ import {
   DependenciaRublo,
   DetalleRubroPrincipal,
   DetalleRubroSecundario,
-  DetalleRubroTerciario
+  DetalleRubroTerciario,
+  DetalleRubroCuaternario,
+  DetalleRubroQuinario,
+  DetalleRubroSenario
 } from '../../services/gestor-informacion.service';
 import { CentrosCostoService, CentroCosto, Dependencia } from '../../services/centros-costo.service';
-import { RubrosService, Periodo, RubroPrincipal, RubroSecundario, RubroTerciario } from '../../services/rubros.service';
+import { RubrosService, Periodo, RubroPrincipal, RubroSecundario, RubroTerciario, RubroCuaternario, RubroQuinario, RubroSenario } from '../../services/rubros.service';
 import { ToastService } from '../../services/toast.service';
 
 interface RubroSeleccionado {
@@ -25,7 +28,7 @@ interface RubroSeleccionado {
 }
 
 interface RubroConValores {
-  tipo: 'principal' | 'secundario' | 'terciario';
+  tipo: 'principal' | 'secundario' | 'terciario' | 'cuaternario' | 'quinario' | 'senario';
   id: number;
   nombre: string;
   cuenta: string;
@@ -318,10 +321,8 @@ export class GestorDeInformacion implements OnInit {
   cargarFichas(): void {
     this.gestorService.getFichas().subscribe({
       next: (response) => {
-        if (response && response.data) {
-          this.fichas = response.data;
-        } else if (Array.isArray(response)) {
-          this.fichas = response as any;
+        if (Array.isArray(response)) {
+          this.fichas = response;
         } else {
           this.fichas = [];
         }
@@ -348,7 +349,7 @@ export class GestorDeInformacion implements OnInit {
       return;
     }
     
-    this.gestorService.createFicha(this.nuevaFicha).subscribe({
+    this.gestorService.createFicha({ nombre: this.nuevaFicha }).subscribe({
       next: () => {
         this.toast.success('Creada', 'Ficha creada exitosamente');
         this.cargarFichas();
@@ -476,12 +477,31 @@ export class GestorDeInformacion implements OnInit {
 
   async cargarValoresExistentes(): Promise<void> {
     try {
-      const detallesPrincipales = await firstValueFrom(this.gestorService.getDetallesRubloPrincipal());
-      const detallesSecundarios = await firstValueFrom(this.gestorService.getDetallesRubroSecundario());
-      const detallesTerciarios = await firstValueFrom(this.gestorService.getDetallesRubroTerciario());
+      const detallesPrincipales = await firstValueFrom(this.gestorService.getAllDetallesRubroPrincipal());
+      const detallesSecundarios = await firstValueFrom(this.gestorService.getAllDetallesRubroSecundario());
+      const detallesTerciarios = await firstValueFrom(this.gestorService.getAllDetallesRubroTerciario());
+      const detallesCuaternarios = await firstValueFrom(this.gestorService.getAllDetallesRubroCuaternario());
+      const detallesQuinarios = await firstValueFrom(this.gestorService.getDetallesRubroQuinario());
+      const detallesSenarios = await firstValueFrom(this.gestorService.getDetallesRubroSenario());
 
-      this.aplicarValoresARubros(this.rubrosConValoresCentro, detallesPrincipales || [], detallesSecundarios || [], detallesTerciarios || []);
-      this.aplicarValoresARubros(this.rubrosConValoresDependencia, detallesPrincipales || [], detallesSecundarios || [], detallesTerciarios || []);
+      this.aplicarValoresARubros(
+        this.rubrosConValoresCentro, 
+        detallesPrincipales || [], 
+        detallesSecundarios || [], 
+        detallesTerciarios || [],
+        detallesCuaternarios || [],
+        detallesQuinarios || [],
+        detallesSenarios || []
+      );
+      this.aplicarValoresARubros(
+        this.rubrosConValoresDependencia, 
+        detallesPrincipales || [], 
+        detallesSecundarios || [], 
+        detallesTerciarios || [],
+        detallesCuaternarios || [],
+        detallesQuinarios || [],
+        detallesSenarios || []
+      );
     } catch (error) {
       console.error('Error al cargar valores:', error);
     }
@@ -491,7 +511,10 @@ export class GestorDeInformacion implements OnInit {
     rubros: RubroConValores[],
     detallesPrincipales: DetalleRubroPrincipal[],
     detallesSecundarios: DetalleRubroSecundario[],
-    detallesTerciarios: DetalleRubroTerciario[]
+    detallesTerciarios: DetalleRubroTerciario[],
+    detallesCuaternarios: DetalleRubroCuaternario[],
+    detallesQuinarios: DetalleRubroQuinario[],
+    detallesSenarios: DetalleRubroSenario[]
   ): void {
     rubros.forEach(rubro => {
       if (rubro.tipo === 'principal') {
@@ -524,10 +547,40 @@ export class GestorDeInformacion implements OnInit {
           rubro.valores[detalle.ficha_id] = detalle.valor;
           rubro.detalleIds[detalle.ficha_id] = detalle.id!;
         });
+      } else if (rubro.tipo === 'cuaternario') {
+        const detalles = detallesCuaternarios.filter(d => 
+          d.rublo_cuaternario_id === rubro.id && 
+          d.periodo_fiscal_id === this.periodoSeleccionado
+        );
+        
+        detalles.forEach(detalle => {
+          rubro.valores[detalle.ficha_id] = detalle.valor;
+          rubro.detalleIds[detalle.ficha_id] = detalle.id!;
+        });
+      } else if (rubro.tipo === 'quinario') {
+        const detalles = detallesQuinarios.filter(d => 
+          d.rublo_quinario_id === rubro.id && 
+          d.periodo_fiscal_id === this.periodoSeleccionado
+        );
+        
+        detalles.forEach(detalle => {
+          rubro.valores[detalle.ficha_id] = detalle.valor;
+          rubro.detalleIds[detalle.ficha_id] = detalle.id!;
+        });
+      } else if (rubro.tipo === 'senario') {
+        const detalles = detallesSenarios.filter(d => 
+          d.rublo_senario_id === rubro.id && 
+          d.periodo_fiscal_id === this.periodoSeleccionado
+        );
+        
+        detalles.forEach(detalle => {
+          rubro.valores[detalle.ficha_id] = detalle.valor;
+          rubro.detalleIds[detalle.ficha_id] = detalle.id!;
+        });
       }
 
       if (rubro.hijos && rubro.hijos.length > 0) {
-        this.aplicarValoresARubros(rubro.hijos, detallesPrincipales, detallesSecundarios, detallesTerciarios);
+        this.aplicarValoresARubros(rubro.hijos, detallesPrincipales, detallesSecundarios, detallesTerciarios, detallesCuaternarios, detallesQuinarios, detallesSenarios);
       }
     });
   }
@@ -577,15 +630,96 @@ export class GestorDeInformacion implements OnInit {
               secundario.tieneHijos = true;
               
               for (const ter of terciarios) {
-                secundario.hijos!.push({
+                const terciario: RubroConValores = {
                   tipo: 'terciario',
                   id: ter.id!,
                   nombre: ter.nombre,
                   cuenta: ter.cuenta,
                   valores: {},
                   detalleIds: {},
+                  expandido: false,
+                  hijos: [],
                   tieneHijos: false
-                });
+                };
+
+                // NIVEL 4: CUATERNARIOS
+                try {
+                  const cuaternarios = await firstValueFrom(this.rubrosService.getRubrosCuaternariosByTerciario(ter.id!));
+                  
+                  if (cuaternarios && cuaternarios.length > 0) {
+                    terciario.tieneHijos = true;
+                    
+                    for (const cuat of cuaternarios) {
+                      const cuaternario: RubroConValores = {
+                        tipo: 'cuaternario',
+                        id: cuat.id!,
+                        nombre: cuat.nombre,
+                        cuenta: cuat.cuenta,
+                        valores: {},
+                        detalleIds: {},
+                        expandido: false,
+                        hijos: [],
+                        tieneHijos: false
+                      };
+
+                      // NIVEL 5: QUINARIOS
+                      try {
+                        const quinarios = await firstValueFrom(this.rubrosService.getRubrosQuinariosByCuaternario(cuat.id!));
+                        
+                        if (quinarios && quinarios.length > 0) {
+                          cuaternario.tieneHijos = true;
+                          
+                          for (const quin of quinarios) {
+                            const quinario: RubroConValores = {
+                              tipo: 'quinario',
+                              id: quin.id!,
+                              nombre: quin.nombre,
+                              cuenta: quin.cuenta,
+                              valores: {},
+                              detalleIds: {},
+                              expandido: false,
+                              hijos: [],
+                              tieneHijos: false
+                            };
+
+                            // NIVEL 6: SENARIOS
+                            try {
+                              const senarios = await firstValueFrom(this.rubrosService.getRubrosSenariosByQuinario(quin.id!));
+                              
+                              if (senarios && senarios.length > 0) {
+                                quinario.tieneHijos = true;
+                                
+                                for (const sen of senarios) {
+                                  quinario.hijos!.push({
+                                    tipo: 'senario',
+                                    id: sen.id!,
+                                    nombre: sen.nombre,
+                                    cuenta: sen.cuenta,
+                                    valores: {},
+                                    detalleIds: {},
+                                    tieneHijos: false
+                                  });
+                                }
+                              }
+                            } catch (error) {
+                              console.log(`No hay senarios para ${quin.cuenta}`);
+                            }
+
+                            cuaternario.hijos!.push(quinario);
+                          }
+                        }
+                      } catch (error) {
+                        console.log(`No hay quinarios para ${cuat.cuenta}`);
+                      }
+
+                      terciario.hijos!.push(cuaternario);
+                    }
+                  }
+                } catch (error) {
+                  console.log(`No hay cuaternarios para ${ter.cuenta}`);
+                }
+
+                secundario.hijos!.push(terciario);
               }
             }
           } catch (error) {
@@ -649,13 +783,13 @@ export class GestorDeInformacion implements OnInit {
           if (rubro.detalleIds[ficha.id]) {
             promesas.push(
               firstValueFrom(
-                this.gestorService.updateDetalleRubloPrincipal(rubro.detalleIds[ficha.id], data)
+                this.gestorService.updateDetalleRubroPrincipal(rubro.detalleIds[ficha.id], data)
               )
             );
           } else {
             promesas.push(
               firstValueFrom(
-                this.gestorService.createDetalleRubloPrincipal(data)
+                this.gestorService.createDetalleRubroPrincipal(data)
               ).then((response: any) => {
                 const id = response?.id || response?.data?.id;
                 if (id) {
@@ -698,6 +832,69 @@ export class GestorDeInformacion implements OnInit {
             promesas.push(
               firstValueFrom(
                 this.gestorService.createDetalleRubroTerciario(data)
+              ).then((response: any) => {
+                const id = response?.id || response?.data?.id;
+                if (id) {
+                  rubro.detalleIds[ficha.id] = id;
+                }
+              })
+            );
+          }
+        } else if (rubro.tipo === 'cuaternario') {
+          data.rublo_cuaternario_id = rubro.id;
+
+          if (rubro.detalleIds[ficha.id]) {
+            promesas.push(
+              firstValueFrom(
+                this.gestorService.updateDetalleRubroCuaternario(rubro.detalleIds[ficha.id], data)
+              )
+            );
+          } else {
+            promesas.push(
+              firstValueFrom(
+                this.gestorService.createDetalleRubroCuaternario(data)
+              ).then((response: any) => {
+                const id = response?.id || response?.data?.id;
+                if (id) {
+                  rubro.detalleIds[ficha.id] = id;
+                }
+              })
+            );
+          }
+        } else if (rubro.tipo === 'quinario') {
+          data.rublo_quinario_id = rubro.id;
+
+          if (rubro.detalleIds[ficha.id]) {
+            promesas.push(
+              firstValueFrom(
+                this.gestorService.updateDetalleRubroQuinario(rubro.detalleIds[ficha.id], data)
+              )
+            );
+          } else {
+            promesas.push(
+              firstValueFrom(
+                this.gestorService.createDetalleRubroQuinario(data)
+              ).then((response: any) => {
+                const id = response?.id || response?.data?.id;
+                if (id) {
+                  rubro.detalleIds[ficha.id] = id;
+                }
+              })
+            );
+          }
+        } else if (rubro.tipo === 'senario') {
+          data.rublo_senario_id = rubro.id;
+
+          if (rubro.detalleIds[ficha.id]) {
+            promesas.push(
+              firstValueFrom(
+                this.gestorService.updateDetalleRubroSenario(rubro.detalleIds[ficha.id], data)
+              )
+            );
+          } else {
+            promesas.push(
+              firstValueFrom(
+                this.gestorService.createDetalleRubroSenario(data)
               ).then((response: any) => {
                 const id = response?.id || response?.data?.id;
                 if (id) {
@@ -756,27 +953,45 @@ export class GestorDeInformacion implements OnInit {
           data.rublo_secundario_id = rubro.id;
         } else if (rubro.tipo === 'terciario') {
           data.rublo_terciario_id = rubro.id;
+        } else if (rubro.tipo === 'cuaternario') {
+          data.rublo_cuaternario_id = rubro.id;
+        } else if (rubro.tipo === 'quinario') {
+          data.rublo_quinario_id = rubro.id;
+        } else if (rubro.tipo === 'senario') {
+          data.rublo_senario_id = rubro.id;
         }
 
         if (detalleId) {
-          let observable;
+          let observable: Observable<any>;
           if (rubro.tipo === 'principal') {
-            observable = this.gestorService.updateDetalleRubloPrincipal(detalleId, data);
+            observable = this.gestorService.updateDetalleRubroPrincipal(detalleId, data);
           } else if (rubro.tipo === 'secundario') {
             observable = this.gestorService.updateDetalleRubroSecundario(detalleId, data);
-          } else {
+          } else if (rubro.tipo === 'terciario') {
             observable = this.gestorService.updateDetalleRubroTerciario(detalleId, data);
+          } else if (rubro.tipo === 'cuaternario') {
+            observable = this.gestorService.updateDetalleRubroCuaternario(detalleId, data);
+          } else if (rubro.tipo === 'quinario') {
+            observable = this.gestorService.updateDetalleRubroQuinario(detalleId, data);
+          } else {
+            observable = this.gestorService.updateDetalleRubroSenario(detalleId, data);
           }
           
           promesas.push(firstValueFrom(observable));
         } else {
-          let observable;
+          let observable: Observable<any>;
           if (rubro.tipo === 'principal') {
-            observable = this.gestorService.createDetalleRubloPrincipal(data);
+            observable = this.gestorService.createDetalleRubroPrincipal(data);
           } else if (rubro.tipo === 'secundario') {
             observable = this.gestorService.createDetalleRubroSecundario(data);
-          } else {
+          } else if (rubro.tipo === 'terciario') {
             observable = this.gestorService.createDetalleRubroTerciario(data);
+          } else if (rubro.tipo === 'cuaternario') {
+            observable = this.gestorService.createDetalleRubroCuaternario(data);
+          } else if (rubro.tipo === 'quinario') {
+            observable = this.gestorService.createDetalleRubroQuinario(data);
+          } else {
+            observable = this.gestorService.createDetalleRubroSenario(data);
           }
           
           promesas.push(
@@ -836,26 +1051,44 @@ export class GestorDeInformacion implements OnInit {
             data.rublo_secundario_id = rubro.id;
           } else if (rubro.tipo === 'terciario') {
             data.rublo_terciario_id = rubro.id;
+          } else if (rubro.tipo === 'cuaternario') {
+            data.rublo_cuaternario_id = rubro.id;
+          } else if (rubro.tipo === 'quinario') {
+            data.rublo_quinario_id = rubro.id;
+          } else if (rubro.tipo === 'senario') {
+            data.rublo_senario_id = rubro.id;
           }
 
           if (detalleId) {
-            let observable;
+            let observable: Observable<any>;
             if (rubro.tipo === 'principal') {
-              observable = this.gestorService.updateDetalleRubloPrincipal(detalleId, data);
+              observable = this.gestorService.updateDetalleRubroPrincipal(detalleId, data);
             } else if (rubro.tipo === 'secundario') {
               observable = this.gestorService.updateDetalleRubroSecundario(detalleId, data);
-            } else {
+            } else if (rubro.tipo === 'terciario') {
               observable = this.gestorService.updateDetalleRubroTerciario(detalleId, data);
+            } else if (rubro.tipo === 'cuaternario') {
+              observable = this.gestorService.updateDetalleRubroCuaternario(detalleId, data);
+            } else if (rubro.tipo === 'quinario') {
+              observable = this.gestorService.updateDetalleRubroQuinario(detalleId, data);
+            } else {
+              observable = this.gestorService.updateDetalleRubroSenario(detalleId, data);
             }
             promesas.push(firstValueFrom(observable));
           } else {
-            let observable;
+            let observable: Observable<any>;
             if (rubro.tipo === 'principal') {
-              observable = this.gestorService.createDetalleRubloPrincipal(data);
+              observable = this.gestorService.createDetalleRubroPrincipal(data);
             } else if (rubro.tipo === 'secundario') {
               observable = this.gestorService.createDetalleRubroSecundario(data);
-            } else {
+            } else if (rubro.tipo === 'terciario') {
               observable = this.gestorService.createDetalleRubroTerciario(data);
+            } else if (rubro.tipo === 'cuaternario') {
+              observable = this.gestorService.createDetalleRubroCuaternario(data);
+            } else if (rubro.tipo === 'quinario') {
+              observable = this.gestorService.createDetalleRubroQuinario(data);
+            } else {
+              observable = this.gestorService.createDetalleRubroSenario(data);
             }
             
             promesas.push(
