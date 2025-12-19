@@ -11,28 +11,21 @@ import { CommonModule } from '@angular/common';
 export class Inicio {
   estadisticas = {
     presupuestoTotal: {
-      valor: '$365K',
-      cambio: '+12.5% vs mes anterior',
+      valor: '$0',
+      cambio: '0%',
       porcentaje: 12.5
     },
     ejecutado: {
-      valor: '$310K',
-      porcentaje: '84.9% del total'
+      valor: '$0',
+      porcentaje: '0% del total'
     },
     disponible: {
-      valor: '$55K',
-      porcentaje: '15.1% restante'
+      valor: '$0',
+      porcentaje: '0% restante'
     }
   };
 
-  ventasBrutas = '$855.8K';
-
-  centrosCosto = [
-    { nombre: 'Facultad de Ingeniería', asignado: 150000, ejecutado: 135000, porcentaje: 90 },
-    { nombre: 'Facultad de Medicina', asignado: 120000, ejecutado: 98000, porcentaje: 81.7 },
-    { nombre: 'Facultad de Derecho', asignado: 80000, ejecutado: 67000, porcentaje: 83.8 },
-    { nombre: 'Administración Central', asignado: 60000, ejecutado: 45000, porcentaje: 75 },
-  ];
+  ventasBrutas = '$0';
 
   centrosCostoDistribucion = [
     { name: 'Facultad de Ingeniería', value: 135000, color: '#1B4332', porcentaje: 35 },

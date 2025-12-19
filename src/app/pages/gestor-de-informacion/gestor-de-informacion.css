@@ -105,6 +105,33 @@
   background-color: #ffffff;
 }
 
+.tabla-excel tbody tr.nivel-cuaternario {
+  background-color: #fef9c3;
+}
+
+.tabla-excel tbody tr.nivel-cuaternario .sticky-col-cuenta,
+.tabla-excel tbody tr.nivel-cuaternario .sticky-col-nombre {
+  background-color: #fef9c3;
+}
+
+.tabla-excel tbody tr.nivel-quinario {
+  background-color: #fce7f3;
+}
+
+.tabla-excel tbody tr.nivel-quinario .sticky-col-cuenta,
+.tabla-excel tbody tr.nivel-quinario .sticky-col-nombre {
+  background-color: #fce7f3;
+}
+
+.tabla-excel tbody tr.nivel-senario {
+  background-color: #cffafe;
+}
+
+.tabla-excel tbody tr.nivel-senario .sticky-col-cuenta,
+.tabla-excel tbody tr.nivel-senario .sticky-col-nombre {
+  background-color: #cffafe;
+}
+
 /* INPUTS */
 .tabla-excel input[type="number"] {
   width: 100%;
@@ -179,6 +206,21 @@
 .badge-tipo.terciario {
   background-color: #e9d5ff;
   color: #6b21a8;
+}
+
+.badge-tipo.cuaternario {
+  background-color: #fef08a;
+  color: #a16207;
+}
+
+.badge-tipo.quinario {
+  background-color: #fbcfe8;
+  color: #9f1239;
+}
+
+.badge-tipo.senario {
+  background-color: #a5f3fc;
+  color: #0e7490;
 }
 
 /* SCROLLBAR PERSONALIZADA */

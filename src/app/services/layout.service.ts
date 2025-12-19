@@ -48,9 +48,9 @@ export class LayoutService {
     'rubros principales': 5,
     'rubros secundarios': 6,
     'rubros terciarios': 7,
-    'rubros cuartos': 8,
-    'rubros quintos': 9,
-    'rubros sextos': 10,
+    'rubros cuaternarios': 8,
+    'rubros quinarios': 9,
+    'rubros senarios': 10,
     'asignaciones': 11,
     'administracion': 12
   };
@@ -188,9 +188,9 @@ export class LayoutService {
       'rubros principales': 'rubros-principales',
       'rubros secundarios': 'rubros-secundarios',
       'rubros terciarios': 'rubros-terciarios',
-      'rubros cuartos': 'rubros-cuartos',
-      'rubros quintos': 'rubros-quintos',
-      'rubros sextos': 'rubros-sextos',
+      'rubros cuartos': 'rubros-cuaternarios',
+      'rubros quintos': 'rubros-quinarios',
+      'rubros sextos': 'rubros-senarios',
       'asignaciones': 'asignaciones',
       'administracion': 'administracion'
     };
